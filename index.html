@@ -1,0 +1,3222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>
+(function(){var F=new Date(2026,10,20,8,0,0).getTime(),D=Date;
+function FD(){if(!(this instanceof FD))return new D(F).toString();return arguments.length?new (Function.prototype.bind.apply(D,[null].concat([].slice.call(arguments))))():new D(F);}
+FD.prototype=D.prototype;FD.now=D.now;FD.UTC=D.UTC;FD.parse=D.parse;window.Date=FD;})();
+window.demoToast=function(msg){var t=document.getElementById('demoToast');if(!t){t=document.createElement('div');t.id='demoToast';
+t.style.cssText='position:fixed;right:28px;top:76px;max-width:460px;background:#161e35;color:#e8ecf4;border:1px solid #22d3ee;border-radius:12px;padding:12px 20px;font:600 14px -apple-system,Segoe UI,sans-serif;z-index:100000;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:opacity .3s';document.body.appendChild(t);}
+t.textContent=msg;t.style.opacity='1';clearTimeout(window.__dt);window.__dt=setTimeout(function(){t.style.opacity='0';},2600);};
+window.demoSignOut=function(){demoToast('Demo: sign-in is turned off (the real dashboard uses Microsoft Entra ID)');};
+document.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('#refreshBtn')){e.stopImmediatePropagation();e.preventDefault();demoToast('Demo: no back end. In the real dashboard, Refresh rebuilds every figure in about a minute.');}},true);
+</script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SME Quote Report — YTD 2026</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"
+  onerror="var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js';document.head.appendChild(s);"></script>
+
+
+
+<script src="dashboard-data.js" id="dashboardDataScript"></script>
+
+<script>window.__REFRESH_ENDPOINT__ = '';</script>
+<style>
+:root{
+  --bg:#0a0e1c;--card:#161e35;--card2:#1f2942;--text:#e8ecf4;--muted:#8b97ad;
+  --subtle:#5e6a7f;--cyan:#22d3ee;--teal:#2dd4bf;--green:#34d399;--red:#f87171;
+  --amber:#fbbf24;--purple:#a78bfa;--pink:#f472b6;--border:#2a3550;--border-subtle:#1c2440;
+  --radius:18px;--radius-sm:12px;--radius-pill:999px;
+  --shadow-sm:0 1px 3px rgba(0,0,0,0.2);
+  --shadow:0 8px 24px rgba(0,0,0,0.35),0 2px 6px rgba(0,0,0,0.2);
+  --shadow-lg:0 16px 48px rgba(0,0,0,0.45),0 4px 12px rgba(0,0,0,0.25);
+  --shadow-glow:0 0 32px rgba(34,211,238,0.15);
+  --s1:4px;--s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;
+  --ease:cubic-bezier(0.4,0,0.2,1);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:115%;overflow-x:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display','Segoe UI',system-ui,sans-serif;background:radial-gradient(ellipse at top,#101630 0%,#0a0e1c 60%);background-attachment:fixed;color:var(--text);min-height:100vh;display:flex;overflow-x:hidden;width:100%;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+
+.sidebar{width:72px;height:100vh;background:rgba(8,11,22,0.7);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-right:1px solid rgba(255,255,255,0.06);display:flex;flex-direction:column;align-items:center;padding:18px 0;gap:6px;position:fixed;top:0;left:0;z-index:1000;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(34,211,238,0.25) transparent}
+.sidebar::-webkit-scrollbar{width:4px}
+.sidebar::-webkit-scrollbar-track{background:transparent}
+.sidebar::-webkit-scrollbar-thumb{background:rgba(34,211,238,0.25);border-radius:2px}
+.sidebar::-webkit-scrollbar-thumb:hover{background:rgba(34,211,238,0.5)}
+.sidebar .sidebar-logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--cyan),var(--teal));display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-weight:800;font-size:14px;color:#0a0e1c;letter-spacing:0.5px;box-shadow:0 4px 16px rgba(34,211,238,0.35)}
+.sidebar a{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:12px;text-decoration:none;color:var(--muted);width:58px;transition:all 0.2s var(--ease);cursor:pointer}
+.sidebar a:hover{background:rgba(34,211,238,0.08);color:var(--text);transform:translateY(-1px)}
+.sidebar a.active{background:linear-gradient(135deg,rgba(34,211,238,0.18),rgba(45,212,191,0.12));color:var(--cyan);box-shadow:inset 0 0 0 1px rgba(34,211,238,0.2)}
+.sidebar a .nav-icon{width:22px;height:22px;display:flex;align-items:center;justify-content:center}
+.sidebar a .nav-icon svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sidebar a .nav-label{font-size:0.5rem;font-weight:600;text-transform:uppercase;letter-spacing:0.3px;text-align:center;line-height:1.2}
+
+.main-content{margin-left:72px;flex:1;min-width:0;padding-bottom:var(--s7);overflow-x:hidden;max-width:calc(100vw - 72px)}
+
+.refresh-bar{padding:14px 36px 4px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+.refresh-bar .page-title{font-size:1.5rem;font-weight:800;background:linear-gradient(135deg,#fff 0%,#a5b4fc 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:-0.02em;margin:0;line-height:1.1}
+.refresh-bar-meta{display:flex;align-items:center;gap:14px;font-size:0.7rem;color:var(--subtle);flex-wrap:wrap;justify-content:flex-end}
+.refresh-bar-stamp{color:var(--subtle)}
+.refresh-btn{background:linear-gradient(135deg,rgba(34,211,238,0.12),rgba(45,212,191,0.08));border:1px solid rgba(34,211,238,0.3);color:var(--cyan);padding:8px 16px;border-radius:var(--radius-pill);font-size:0.72rem;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px;transition:all 0.2s var(--ease);font-weight:600;letter-spacing:0.2px}
+.refresh-btn:hover:not(:disabled){background:linear-gradient(135deg,rgba(34,211,238,0.22),rgba(45,212,191,0.15));border-color:var(--cyan);box-shadow:0 4px 16px rgba(34,211,238,0.25);transform:translateY(-1px)}
+.refresh-btn:disabled{opacity:0.5;cursor:not-allowed}
+.refresh-btn.refreshing{background:rgba(34,211,238,0.15);border-color:var(--cyan)}
+.refresh-btn.cooldown{color:var(--muted);border-color:var(--border)}
+.refresh-status{font-size:0.7rem;color:var(--muted)}
+.refresh-status.loading{color:var(--cyan)}
+.refresh-status.success{color:var(--green)}
+.refresh-status.error{color:var(--red);max-width:480px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.refresh-spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(34,211,238,0.25);border-top-color:var(--cyan);border-radius:50%;animation:rspin 0.7s linear infinite;vertical-align:middle}
+@keyframes rspin{to{transform:rotate(360deg)}}
+
+.header h1, .qvb-header h1{display:none}
+.header{padding:0 36px var(--s3);display:flex;flex-direction:column;align-items:center;gap:var(--s3)}
+
+.filters{display:flex;gap:var(--s5);width:100%;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;
+  background:linear-gradient(135deg,rgba(34,211,238,0.07) 0%,rgba(167,139,250,0.05) 100%);
+  border:1px solid rgba(34,211,238,0.18);
+  border-radius:var(--radius);
+  padding:var(--s3) var(--s5);
+  box-shadow:var(--shadow),0 0 40px rgba(34,211,238,0.05);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  position:relative;z-index:50;isolation:isolate}
+#pageQuotetree .filters,
+#pageLeadtracker .filters,
+#pageContractvalue .filters,
+#pageCvtree .filters{justify-content:flex-start}
+.filter-group{display:flex;flex-direction:column;gap:6px;position:relative}
+.filter-label{font-size:0.68rem;color:var(--cyan);font-weight:700;text-transform:uppercase;letter-spacing:0.7px}
+.filter-row{display:flex;align-items:center;gap:8px}
+.filter-row .to-label{font-size:0.65rem;color:var(--muted);font-weight:500}
+.filter-select{background-color:rgba(255,255,255,0.04);border:1px solid rgba(34,211,238,0.25);border-radius:var(--radius-sm);padding:9px 30px 9px 14px;font-size:0.78rem;color:var(--text);cursor:pointer;appearance:none;-webkit-appearance:none;font-family:inherit;font-weight:500;transition:all 0.18s var(--ease);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2322d3ee'/%3E%3C/svg%3E") !important;
+  background-repeat:no-repeat !important;background-position:right 10px center !important}
+.filter-select:focus{outline:none;border-color:var(--cyan);background-color:rgba(34,211,238,0.08);box-shadow:0 0 0 3px rgba(34,211,238,0.12)}
+.filter-select option{background:var(--card2);color:var(--text)}
+.filter-select:hover{border-color:var(--cyan);background-color:rgba(34,211,238,0.06)}
+input.filter-select{background-image:none !important;cursor:text;padding-right:14px}
+
+.multi-select{position:relative;display:inline-block}
+.multi-btn{background-color:rgba(255,255,255,0.04);border:1px solid rgba(34,211,238,0.25);border-radius:var(--radius-sm);padding:9px 30px 9px 14px;font-size:0.78rem;color:var(--text);cursor:pointer;min-width:90px;user-select:none;font-weight:500;transition:all 0.18s var(--ease);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2322d3ee'/%3E%3C/svg%3E") !important;
+  background-repeat:no-repeat !important;background-position:right 10px center !important}
+.multi-btn:hover{border-color:var(--cyan);background-color:rgba(34,211,238,0.06)}
+.multi-panel{display:none;position:absolute;top:100%;left:0;margin-top:8px;background:var(--card2);border:1px solid rgba(34,211,238,0.25);border-radius:var(--radius-sm);padding:8px 0;z-index:9999;min-width:160px;max-height:60vh;overflow-y:auto;overscroll-behavior:contain;box-shadow:var(--shadow-lg);scrollbar-width:thin;scrollbar-color:rgba(34,211,238,0.4) transparent}
+.multi-panel::-webkit-scrollbar{width:8px}
+.multi-panel::-webkit-scrollbar-thumb{background:rgba(34,211,238,0.4);border-radius:4px}
+.multi-panel::-webkit-scrollbar-thumb:hover{background:rgba(34,211,238,0.7)}
+.multi-panel.open{display:block}
+.multi-panel label{display:flex;align-items:center;gap:10px;padding:7px 16px;font-size:0.78rem;color:var(--text);cursor:pointer;white-space:nowrap;transition:background 0.12s}
+.multi-panel label:hover{background:rgba(34,211,238,0.08)}
+.multi-panel input[type=checkbox]{accent-color:var(--cyan);width:14px;height:14px;cursor:pointer}
+.filter-static{background:rgba(255,255,255,0.04);border:1px solid rgba(34,211,238,0.25);border-radius:var(--radius-sm);padding:9px 14px;font-size:0.78rem;color:var(--text);font-weight:500}
+
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:var(--s3);padding:0 36px var(--s3)}
+.kpi{background:linear-gradient(135deg,var(--card) 0%,var(--card2) 100%);border:1px solid var(--border-subtle);border-radius:var(--radius);padding:var(--s3) var(--s4);transition:all 0.25s var(--ease);box-shadow:var(--shadow);position:relative;overflow:hidden;cursor:default}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--teal));border-radius:var(--radius) var(--radius) 0 0}
+.kpi:nth-child(3)::before{background:linear-gradient(90deg,var(--amber),#f97316)}
+.kpi:nth-child(4)::before{background:linear-gradient(90deg,var(--teal),var(--green))}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg);border-color:rgba(34,211,238,0.25)}
+.kpi-label{font-size:0.72rem;color:var(--muted);letter-spacing:0.2px;font-weight:600;margin-bottom:4px}
+.kpi-val{font-size:1.65rem;font-weight:800;color:var(--cyan);letter-spacing:-0.02em;font-variant-numeric:tabular-nums;line-height:1.1;margin-bottom:3px;background:linear-gradient(135deg,var(--cyan),var(--teal));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.kpi:nth-child(3) .kpi-val{background:linear-gradient(135deg,var(--amber),#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:var(--amber)}
+.kpi:nth-child(4) .kpi-val{background:linear-gradient(135deg,var(--teal),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;color:var(--teal)}
+.kpi-delta{font-size:0.72rem;color:var(--muted);font-weight:500}
+.delta-up{color:var(--green)}
+.delta-down{color:var(--red)}
+
+.grid-2x2{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto;gap:var(--s4);padding:0 36px var(--s4)}
+.grid-2x2 .card-tall{grid-row:1/4}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--s4);padding:0 36px var(--s5)}
+.card{background:linear-gradient(135deg,var(--card) 0%,var(--card2) 100%);border:1px solid var(--border-subtle);border-radius:var(--radius);padding:var(--s5) var(--s5);box-shadow:var(--shadow);transition:border-color 0.18s var(--ease)}
+.card:hover{border-color:rgba(34,211,238,0.15)}
+.card-tall{display:flex;flex-direction:column}
+.card-tall .chart-box{flex:1}
+.card h3{font-size:0.82rem;font-weight:700;color:var(--text);margin-bottom:var(--s4);text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:8px}
+.card h3::before{content:'';width:3px;height:14px;background:linear-gradient(180deg,var(--cyan),var(--teal));border-radius:2px}
+.chart-box{position:relative;width:100%}
+.legend-row{display:flex;gap:16px;margin-bottom:10px}
+.legend-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px}
+.legend-item{font-size:0.7rem;color:var(--muted);display:flex;align-items:center;font-weight:500}
+.footer{text-align:center;padding:32px;color:var(--subtle);font-size:0.66rem}
+
+#chartTooltip{position:fixed;pointer-events:none;background:rgba(22,30,53,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(34,211,238,0.25);border-radius:var(--radius-sm);padding:10px 14px;font-size:0.76rem;color:var(--text);z-index:9999;display:none;white-space:nowrap;box-shadow:var(--shadow-lg)}
+#chartTooltip .tt-title{font-weight:700;margin-bottom:6px;color:#fff}
+#chartTooltip .tt-row{display:flex;align-items:center;gap:8px;margin:2px 0}
+#chartTooltip .tt-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+
+.chart-scroll{max-height:180px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.chart-scroll::-webkit-scrollbar{width:6px}
+.chart-scroll::-webkit-scrollbar-track{background:transparent}
+.chart-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.chart-scroll::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+@media(max-width:900px){.kpi-row,.grid-2x2{grid-template-columns:1fr 1fr}.grid-3{grid-template-columns:1fr}}
+
+.qvb-header{padding:0 36px var(--s3);display:flex;flex-direction:column;align-items:center;gap:var(--s3)}
+.qvb-kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--s3);padding:0 36px var(--s3)}
+.qvb-kpi-pair .kpi{flex:1 1 0;min-width:0;text-align:center;padding:18px 20px}
+.qvb-kpi-pair .kpi .kpi-label{text-align:center}
+.qvb-kpi-pair .kpi .kpi-val{background:none !important;-webkit-background-clip:initial !important;-webkit-text-fill-color:initial !important;background-clip:initial !important;color:var(--cyan);font-size:1.85rem;text-align:center}
+.qvb-kpi-pair .kpi:nth-child(2) .kpi-val{color:var(--amber)}
+.qvb-kpi-pair .kpi:nth-child(3) .kpi-val{color:var(--teal)}
+.qvb-body{display:grid;grid-template-columns:1.6fr 1fr;gap:var(--s4);padding:0 36px var(--s5);align-items:start}
+.qvb-columns{display:grid;grid-template-columns:1.6fr 1fr;gap:var(--s5);padding:0 36px var(--s5);align-items:start}
+.qvb-col-left,.qvb-col-right{display:flex;flex-direction:column;gap:var(--s4)}
+.qvb-col-left .qvb-kpi-pair{display:grid;grid-template-columns:1fr 1fr;gap:var(--s4)}
+.qvb-col-right .kpi{margin:0}
+.table-scroll{max-height:220px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+.table-scroll::-webkit-scrollbar{width:6px}
+.table-scroll::-webkit-scrollbar-track{background:transparent}
+.table-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.table-scroll::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+.billing-table{width:100%;border-collapse:collapse;font-size:0.76rem}
+.billing-table th{text-align:left;padding:12px 14px;color:var(--muted);font-size:0.68rem;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid var(--border);font-weight:700;position:sticky;top:0;background:var(--card);z-index:2}
+.billing-table th:not(:first-child){text-align:right}
+.billing-table td{padding:10px 14px;border-bottom:1px solid var(--border-subtle)}
+.billing-table td:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
+.billing-table .entity-row{cursor:pointer;transition:background 0.15s var(--ease);background:rgba(34,211,238,0.04)}
+.billing-table .entity-row:hover{background:rgba(34,211,238,0.1)}
+.billing-table .entity-row td{color:#e2e8f0;font-weight:500}
+.billing-table .entity-row td:first-child{font-weight:600;color:#fff}
+.billing-table .entity-row td:first-child::before{content:'\25B6';font-size:0.55rem;margin-right:8px;color:var(--muted);display:inline-block;transition:transform 0.2s}
+.billing-table .entity-row.expanded td:first-child::before{transform:rotate(90deg);color:var(--cyan)}
+.billing-table .sub-row{display:none;background:rgba(34,211,238,0.015)}
+.billing-table .sub-row.visible{display:table-row}
+.billing-table .sub-row td:first-child{padding-left:36px;color:var(--muted);font-weight:400}
+.billing-table .sub-row-2{background:rgba(34,211,238,0.01)}
+.billing-table .sub-row-2 td{color:var(--muted);font-weight:400;font-size:0.92em}
+.billing-table .sub-row-3{background:rgba(255,255,255,0.008)}
+.billing-table .sub-row-3 td{color:var(--subtle);font-weight:400;font-size:0.85em}
+.billing-table .qvb-toggle{display:inline-block;width:18px;height:18px;line-height:16px;text-align:center;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-size:0.72rem;cursor:pointer;margin-right:8px;user-select:none;background:rgba(34,211,238,0.04);transition:all 0.15s var(--ease)}
+.billing-table .qvb-toggle:hover{color:var(--cyan);border-color:var(--cyan);background:rgba(34,211,238,0.15)}
+.billing-table .total-row td{border-top:2px solid var(--border);font-weight:700;color:var(--cyan);padding-top:14px}
+.billing-table .total-row td:first-child{color:#fff}
+.billing-table .bar-cell{position:relative;min-width:100px}
+.billing-table .bar-bg{position:absolute;top:50%;left:0;transform:translateY(-50%);height:18px;border-radius:4px;opacity:0.25;transition:width 0.3s var(--ease)}
+.billing-table .bar-fill{position:absolute;top:50%;left:0;transform:translateY(-50%);height:18px;border-radius:4px;opacity:0.8;transition:width 0.3s var(--ease)}
+.billing-table .bar-text{position:relative;z-index:1;font-size:0.7rem}
+.qvb-filter-row{display:flex;gap:var(--s5);width:100%;flex-wrap:wrap;align-items:flex-end;justify-content:flex-start;background:linear-gradient(135deg,rgba(34,211,238,0.07) 0%,rgba(167,139,250,0.05) 100%);border:1px solid rgba(34,211,238,0.18);border-radius:var(--radius);padding:var(--s3) var(--s5);box-shadow:var(--shadow);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);position:relative;z-index:50;isolation:isolate}
+.billing-table .qvb-selected{background:rgba(34,211,238,0.18)}
+.billing-table .qvb-selected td{color:#fff!important;font-weight:600}
+.billing-table .sub-row{cursor:pointer}
+.billing-table .sub-row:hover{background:rgba(34,211,238,0.05)}
+
+.kpi-label{position:relative}
+.kpi-info{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:14px;height:14px;margin-left:6px;
+  border:1px solid rgba(255,255,255,0.35);border-radius:50%;
+  font-size:9px;font-weight:700;font-style:italic;
+  color:rgba(255,255,255,0.75);
+  cursor:help;vertical-align:middle;user-select:none;
+  transition:all 0.15s ease;
+  position:relative;
+}
+.kpi-info:hover{
+  background:rgba(34,211,238,0.18);
+  border-color:var(--cyan);
+  color:#fff;
+}
+#kpiFloatingTip{
+  position:fixed;
+  visibility:hidden;opacity:0;
+  background:rgba(22,30,53,0.98);
+  border:1px solid rgba(34,211,238,0.4);
+  border-radius:10px;
+  padding:14px 18px;
+  font-size:12px;line-height:1.6;
+  font-family:inherit;font-weight:500;
+  color:var(--text);text-align:left;
+  white-space:pre-line;
+  max-width:min(460px,80vw);
+  min-width:300px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.06) inset;
+  z-index:2147483647;
+  pointer-events:none;
+  transition:opacity 0.12s ease;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+#kpiFloatingTip.visible{visibility:visible;opacity:1}
+.kpi{overflow:visible !important}
+
+[style*="grid-template-columns:1fr 1fr"]{
+  grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+}
+@media (max-width: 720px){
+  [style*="grid-template-columns:1fr 1fr"]{
+    grid-template-columns:1fr !important;
+  }
+}
+
+.chart-box canvas{cursor:pointer}
+</style>
+<script>
+(function(){
+  function initKpiTooltips(){
+    var cy = new Date().getFullYear();
+    var ly = cy - 1;
+    var TIPS = {
+      'sbd-accrate':
+        'Acceptance Rate = Numerator ÷ Denominator\n\n' +
+        'Numerator = AcceptedQuotes_' + cy + '\n' +
+        '            + AcceptedQuotes_Pre' + cy + '_SignedBackIn' + cy + '\n\n' +
+        'Denominator = Quotes_' + cy + '\n' +
+        '              + Quotes_Pre' + cy + '_SignedBackIn' + cy + '\n\n' +
+        'Where "Pre' + cy + '_SignedBackIn' + cy + '" = quotes issued\n' +
+        'before ' + cy + ' but signed back this year.',
+      'sbd-accqty':
+        'No. Accepted Quote = AcceptedQuotes_' + cy + '\n' +
+        '                     + AcceptedQuotes_Pre' + cy + '_SignedBackIn' + cy + '\n\n' +
+        'Count of accepted quotes where either:\n' +
+        '  • Quote Date is in ' + cy + ', OR\n' +
+        '  • Quote Date is pre-' + cy + ' AND Signed Back Date is in ' + cy + '.',
+      'sbd-mtd':
+        'SBD Value MTD = Σ [SBD Value] for accepted quotes\n' +
+        'where Signed Back Date is in the current month.\n\n' +
+        'Filters applied: Tax Advisory + Quote Date range +\n' +
+        'Signed Date range (sidebar dropdowns).',
+      'sbd-ytd':
+        'SBD Value YTD = Σ [SBD Value] for accepted quotes\n' +
+        'where Signed Back Date is between Jan 1 and today of ' + cy + '.\n\n' +
+        'Filters applied: Tax Advisory + Quote Date range +\n' +
+        'Signed Date range (sidebar dropdowns).',
+      'cv-accrate':
+        'Acceptance Rate = Numerator ÷ Denominator\n\n' +
+        'Numerator = AcceptedQuotes_' + cy + '\n' +
+        '            + AcceptedQuotes_Pre' + cy + '_SignedBackIn' + cy + '\n\n' +
+        'Denominator = Quotes_' + cy + '\n' +
+        '              + Quotes_Pre' + cy + '_SignedBackIn' + cy + '\n\n' +
+        'Same formula as SBD page, computed on the CV row set\n' +
+        '(quotes with CY Contract Value stamped).',
+      'cv-accqty26':
+        'No. Accepted Quote YTD (' + cy + ') =\n' +
+        '  Distinct count of ENTITY QUOTE where:\n' +
+        '    • Quote Date year = ' + cy + '\n' +
+        '    • Quote month is in Jan through latest month\n' +
+        '    • [QUOTE] STATE = "Accepted"\n' +
+        '    • Passes Tax Advisory / Service / Nature filters\n\n' +
+        'Uses QUOTE DATE (not Signed Back Date).\n' +
+        'This is different from the SBD page metric.',
+      'cv-accqty25':
+        'No. Accepted Quote (Carry-over) =\n' +
+        '  Distinct count of ENTITY QUOTE where:\n' +
+        '    • Quote Date year < ' + cy + ' (issued in any prior year)\n' +
+        '    • Signed Back Date is in Jan-latest month of ' + cy + '\n' +
+        '    • [QUOTE] STATE = "Accepted"\n' +
+        '    • Passes Tax Advisory / Service / Nature filters\n\n' +
+        'These are quotes issued before ' + cy + ' (from ' + ly + ',\n' +
+        (ly-1) + ', or earlier) that finally got signed back and\n' +
+        'accepted this year.',
+      'cv-cv':
+        'Contract Value YTD = Σ [CY Contract Value]\n' +
+        'for quotes with CV stamped, Signed Back in ' + cy + ',\n' +
+        'passing the current filters.\n\n' +
+        'Note: [CY Contract Value] is stamped on ONE row per quote\n' +
+        'via upstream Power Query IsFirstKeep logic — other rows\n' +
+        'for the same quote have CV = 0.',
+      'cv-count':
+        'No. Quote of CY CV = distinct count of quotes\n' +
+        'that have a [CY Contract Value] > 0 (i.e. are\n' +
+        'included in this year\'s CV calculation).',
+      'qvb-cyv':
+        'CY Contract Value = Σ [CY Contract Value] for quotes\n' +
+        'IN SCOPE on this page.\n\n' +
+        'SCOPE = quotes with a [CY Contract Value] > 0 stamped\n' +
+        'by upstream Power Query (r.cycv > 0). This is the\n' +
+        '"contracted book" — NOT total firm-wide contract value.\n\n' +
+        'Filters: Tax Advisory + Billing Month + this page\'s\n' +
+        'Signed-Back-Date filter (Pre-' + cy + ' / ' + cy + ' / Overall).',
+      'qvb-bill':
+        'Billing To Date = Σ [Billing] for the same quotes in scope.\n\n' +
+        'ONLY invoices tied to CV-stamped quotes are counted.\n' +
+        'Firm-wide invoicing (including ad-hoc invoices not\n' +
+        'attached to a quote with CV) is NOT included here.\n\n' +
+        'This shows billing against the contracted book only —\n' +
+        'do NOT read it as "total firm invoicing for ' + cy + '."',
+      'qvb-unb':
+        'Unbilled Balance = Σ [Remaining to Bill] (where > 0)\n' +
+        'for the same quotes in scope.\n\n' +
+        '= Contract Value minus Billing, restricted to the\n' +
+        'CV-scoped universe. Represents contracted work still\n' +
+        'to be invoiced — NOT the firm\'s total AR balance.',
+    };
+    var tip = document.getElementById('kpiFloatingTip');
+    if (!tip) {
+      tip = document.createElement('div');
+      tip.id = 'kpiFloatingTip';
+      document.body.appendChild(tip);
+    }
+    function showTip(el){
+      var key = el.getAttribute('data-tip');
+      var text = TIPS[key];
+      if (!text) return;
+      tip.textContent = text;
+      tip.classList.add('visible');
+      var r = el.getBoundingClientRect();
+      var tw = tip.offsetWidth;
+      var th = tip.offsetHeight;
+      var vw = window.innerWidth;
+      var vh = window.innerHeight;
+      var left = r.left + r.width/2 - tw/2;
+      left = Math.max(12, Math.min(left, vw - tw - 12));
+      var top = r.bottom + 10;
+      if (top + th > vh - 12) {
+        top = r.top - th - 10;
+      }
+      tip.style.left = left + 'px';
+      tip.style.top  = top + 'px';
+    }
+    function hideTip(){
+      tip.classList.remove('visible');
+    }
+    var nodes = document.querySelectorAll('.kpi-info[data-tip]');
+    for (var i = 0; i < nodes.length; i++) {
+      var el = nodes[i];
+      var key = el.getAttribute('data-tip');
+      if (!TIPS[key]) continue;
+      el.setAttribute('title', ''); // suppress native title tooltip
+      el.addEventListener('mouseenter', (function(node){ return function(){ showTip(node); }; })(el));
+      el.addEventListener('mouseleave', hideTip);
+      el.setAttribute('tabindex', '0');
+      el.addEventListener('focus', (function(node){ return function(){ showTip(node); }; })(el));
+      el.addEventListener('blur', hideTip);
+    }
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initKpiTooltips);
+  } else {
+    initKpiTooltips();
+  }
+})();
+</script>
+</head>
+<body>
+<nav class="sidebar">
+  <div class="sidebar-logo">NW</div>
+  <a class="active" onclick="showPage('dashboard')" id="navDashboard">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+    <span class="nav-label">Quote Report (SBD)</span>
+  </a>
+  <a onclick="showPage('quotetree')" id="navQuotetree">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="10" y1="9" x2="10" y2="21"/><line x1="10" y1="15" x2="22" y2="15"/></svg></span>
+    <span class="nav-label">Quote Tree (SBD)</span>
+  </a>
+  <a onclick="showPage('leadtracker')" id="navLeadtracker">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></span>
+    <span class="nav-label">Lead Tracker</span>
+  </a>
+  <a onclick="showPage('contractvalue')" id="navContractvalue">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>
+    <span class="nav-label">Quote Report (CV)</span>
+  </a>
+  <a onclick="showPage('cvtree')" id="navCvtree">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="18" rx="2"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="10" y1="9" x2="10" y2="21"/><line x1="10" y1="15" x2="22" y2="15"/></svg></span>
+    <span class="nav-label">Quote Tree (CV)</span>
+  </a>
+  <a onclick="showPage('qvbPre2026')" id="navQvbPre2026">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 2v20M2 12h20" stroke-width="0"/><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18M9 4v16" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></span>
+    <span class="nav-label">QvB Pre-2026</span>
+  </a>
+  <a onclick="showPage('qvb2026')" id="navQvb2026">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18M9 4v16" fill="none" stroke="currentColor" stroke-width="1.3"/></svg></span>
+    <span class="nav-label">QvB 2026</span>
+  </a>
+  <a onclick="showPage('qvbOverall')" id="navQvbOverall">
+    <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3 10h18M9 4v16" fill="none" stroke="currentColor" stroke-width="1.3"/><circle cx="17" cy="7" r="2" fill="currentColor" stroke="none"/></svg></span>
+    <span class="nav-label">QvB Overall</span>
+  </a>
+</nav>
+
+<div class="main-content">
+
+<div class="refresh-bar">
+  <h1 id="globalPageTitle" class="page-title">SME Quote Report</h1>
+  <div class="refresh-bar-meta"><span style="display:inline-block;margin-right:14px;padding:3px 10px;border-radius:999px;font-size:0.62rem;font-weight:700;letter-spacing:.04em;vertical-align:middle;color:#0a0e1c;background:linear-gradient(135deg,#fbbf24,#f472b6)">DEMO · MADE-UP DATA</span>
+    <span class="refresh-bar-stamp">Last updated: <span id="lastUpdated"><!--TS_START-->NEVER_BUILT<!--TS_END--></span></span>
+    <button id="refreshBtn" class="refresh-btn" type="button" title="Pull the latest data from SharePoint (takes about 1 minute)">
+      <span id="refreshBtnIcon">↻</span>
+      <span id="refreshBtnLabel">Refresh now</span>
+    </button>
+    <span id="refreshStatus" class="refresh-status"></span>
+    <a id="signoutLink" href="javascript:void(0)" onclick="demoSignOut()" title="Sign out (turned off in the demo)" style="margin-left:14px;font-size:0.78rem;color:#94a3b8;text-decoration:none;padding:6px 12px;border:1px solid rgba(148,163,184,0.25);border-radius:8px;transition:all 0.15s ease;display:inline-flex;align-items:center;gap:6px;cursor:pointer" onmouseover="this.style.color='#22d3ee';this.style.borderColor='rgba(34,211,238,0.5)'" onmouseout="this.style.color='#94a3b8';this.style.borderColor='rgba(148,163,184,0.25)'">&#x21AA; Sign out</a>
+  </div>
+</div>
+<div id="pageDashboard">
+<div class="header">
+  <h1>SME Quote Report</h1>
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filter-label">Quote Date</span>
+      <div class="filter-row">
+        <select class="filter-select" id="fQuoteFrom" onchange="refresh()"></select>
+        <span class="to-label">to</span>
+        <select class="filter-select" id="fQuoteTo" onchange="refresh()"></select>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Signed Date</span>
+      <div class="filter-row">
+        <select class="filter-select" id="fSignedFrom" onchange="refresh()"></select>
+        <span class="to-label">to</span>
+        <select class="filter-select" id="fSignedTo" onchange="refresh()"></select>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Service</span>
+      <div class="multi-select" id="svcFilter">
+        <div class="multi-btn" id="svcBtn">All</div>
+        <div class="multi-panel" id="svcPanel">
+          <label><input type="checkbox" value="__all__" checked onchange="toggleAll(this,'svc-cb');refresh()"> All</label>
+          <label><input type="checkbox" class="svc-cb" value="Account" checked onchange="uncheckAll('svc-cb');refresh()"> Account</label>
+          <label><input type="checkbox" class="svc-cb" value="Audit" checked onchange="uncheckAll('svc-cb');refresh()"> Audit</label>
+          <label><input type="checkbox" class="svc-cb" value="Audit (MBRS)" checked onchange="uncheckAll('svc-cb');refresh()"> Audit (MBRS)</label>
+          <label><input type="checkbox" class="svc-cb" value="Cosec" checked onchange="uncheckAll('svc-cb');refresh()"> Cosec</label>
+          <label><input type="checkbox" class="svc-cb" value="Outsourcing" checked onchange="uncheckAll('svc-cb');refresh()"> Outsourcing</label>
+          <label><input type="checkbox" class="svc-cb" value="Payroll" checked onchange="uncheckAll('svc-cb');refresh()"> Payroll</label>
+          <label><input type="checkbox" class="svc-cb" value="Tax" checked onchange="uncheckAll('svc-cb');refresh()"> Tax</label>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Service Nature</span>
+      <div class="multi-select" id="snFilter">
+        <div class="multi-btn" id="snBtn">All</div>
+        <div class="multi-panel" id="snPanel">
+          <label><input type="checkbox" value="__all__" checked onchange="toggleAll(this,'sn-cb');refresh()"> All</label>
+          <label><input type="checkbox" class="sn-cb" value="Recurring" checked onchange="uncheckAll('sn-cb');refresh()"> Recurring</label>
+          <label><input type="checkbox" class="sn-cb" value="One-Off" checked onchange="uncheckAll('sn-cb');refresh()"> One-Off</label>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Tax Advisory</span>
+      <select class="filter-select ta-filter-select" onchange="onTaFilterChange(this.value)">
+        <option value="all">All</option>
+        <option value="non-TA" selected>non-TA</option>
+        <option value="TA">TA</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div id="crossFilterBadge" style="display:none;padding:4px 30px 8px;"><span style="background:rgba(6,182,212,0.15);border:1px solid var(--cyan);border-radius:6px;padding:4px 12px;font-size:0.72rem;color:var(--cyan);display:inline-flex;align-items:center;gap:8px"><span id="crossFilterLabel"></span><span onclick="crossFilter.dim=null;crossFilter.val=null;crossFilter.chartId=null;refresh()" style="cursor:pointer;font-weight:700;font-size:0.85rem;color:var(--muted)">&times;</span></span></div>
+
+<div class="kpi-row">
+  <div class="kpi"><div class="kpi-label">Acceptance Rate<span class="kpi-info" data-tip="sbd-accrate">i</span></div><div class="kpi-val" id="kAccRate">--</div><div class="kpi-delta" id="kAccDelta"></div></div>
+  <div class="kpi"><div class="kpi-label">No. Accepted Quote<span class="kpi-info" data-tip="sbd-accqty">i</span></div><div class="kpi-val" id="kAccQty">--</div><div class="kpi-delta" id="kAccQtyDelta"></div></div>
+  <div class="kpi"><div class="kpi-label">SBD Value MTD<span class="kpi-info" data-tip="sbd-mtd">i</span></div><div class="kpi-val" id="kSbdMtd">--</div><div class="kpi-delta" id="kSbdMtdDelta"></div></div>
+  <div class="kpi"><div class="kpi-label">SBD Value YTD<span class="kpi-info" data-tip="sbd-ytd">i</span></div><div class="kpi-val" id="kSbdYtd">--</div><div class="kpi-delta" id="kSbdYtdDelta"></div></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 30px 12px">
+  <div class="card"><h3>SBD Value YTD by Industry</h3>
+    <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>CY</span><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>LY</span></div>
+    <div class="chart-scroll"><div class="chart-box" id="boxIndustry"><canvas id="chartIndustry"></canvas></div></div></div>
+  <div class="card"><h3>SBD Value YTD by Agent Entity</h3>
+    <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>CY</span><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>LY</span></div>
+    <div class="chart-scroll"><div class="chart-box" id="boxAgent"><canvas id="chartAgent"></canvas></div></div></div>
+  <div class="card"><h3>SBD Value YTD by Service</h3>
+    <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>CY</span><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>LY</span></div>
+    <div class="chart-scroll"><div class="chart-box" id="boxService"><canvas id="chartService"></canvas></div></div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="card"><h3>SBD Value YTD by Sales Channel</h3>
+      <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>CY</span><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>LY</span></div>
+      <div class="chart-scroll"><div class="chart-box" id="boxChannel"><canvas id="chartChannel"></canvas></div></div></div>
+    <div class="card"><h3>SBD Value YTD by Service Nature</h3>
+      <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>CY</span><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>LY</span></div>
+      <div class="chart-scroll"><div class="chart-box" id="boxNature"><canvas id="chartNature"></canvas></div></div></div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 30px 12px">
+  <div class="card"><h3>Conversion Days by Agent Entity</h3>
+    <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>CM</span><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>COE-BD</span><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>BD</span></div>
+    <div class="chart-box" id="boxConvDonut" style="height:280px"><canvas id="chartConvDonut"></canvas></div></div>
+  <div class="card"><h3>SBD Value YTD by Agent Entity</h3>
+    <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>BD</span><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>COE-BD</span><span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>CM</span></div>
+    <div class="chart-box" id="boxAgentDonut" style="height:280px"><canvas id="chartAgentDonut"></canvas></div></div>
+</div>
+
+
+<div class="footer"><!--TS_START-->NEVER_BUILT<!--TS_END--> &middot; Source: SME_Quote Report (New).xlsx &middot; Sheet: SME Quote &amp; Billing</div>
+<div id="chartTooltip"></div>
+</div>
+
+<div id="pageQuotetree" style="display:none">
+<div class="header">
+  <h1>SME Quote Tree</h1>
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filter-label">Service</span>
+      <div class="multi-select" id="svcFilter2">
+        <div class="multi-btn" id="svcBtn2">All</div>
+        <div class="multi-panel" id="qtSvcPanel">
+          <label><input type="checkbox" value="__all__" checked onchange="toggleAll(this,'qt-svc-cb');renderQTree()"> All</label>
+          <label><input type="checkbox" class="qt-svc-cb" value="Account" checked onchange="uncheckAll('qt-svc-cb');renderQTree()"> Account</label>
+          <label><input type="checkbox" class="qt-svc-cb" value="Audit" checked onchange="uncheckAll('qt-svc-cb');renderQTree()"> Audit</label>
+          <label><input type="checkbox" class="qt-svc-cb" value="Audit (MBRS)" checked onchange="uncheckAll('qt-svc-cb');renderQTree()"> Audit (MBRS)</label>
+          <label><input type="checkbox" class="qt-svc-cb" value="Cosec" checked onchange="uncheckAll('qt-svc-cb');renderQTree()"> Cosec</label>
+          <label><input type="checkbox" class="qt-svc-cb" value="Outsourcing" checked onchange="uncheckAll('qt-svc-cb');renderQTree()"> Outsourcing</label>
+          <label><input type="checkbox" class="qt-svc-cb" value="Payroll" checked onchange="uncheckAll('qt-svc-cb');renderQTree()"> Payroll</label>
+          <label><input type="checkbox" class="qt-svc-cb" value="Tax" checked onchange="uncheckAll('qt-svc-cb');renderQTree()"> Tax</label>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Service Nature</span>
+      <div class="multi-select" id="snFilter2">
+        <div class="multi-btn" id="snBtn2">All</div>
+        <div class="multi-panel" id="qtSnPanel">
+          <label><input type="checkbox" value="__all__" checked onchange="toggleAll(this,'qt-sn-cb');renderQTree()"> All</label>
+          <label><input type="checkbox" class="qt-sn-cb" value="Recurring" checked onchange="uncheckAll('qt-sn-cb');renderQTree()"> Recurring</label>
+          <label><input type="checkbox" class="qt-sn-cb" value="One-Off" checked onchange="uncheckAll('qt-sn-cb');renderQTree()"> One-Off</label>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Tax Advisory</span>
+      <select class="filter-select ta-filter-select" onchange="onTaFilterChange(this.value)">
+        <option value="all">All</option>
+        <option value="non-TA" selected>non-TA</option>
+        <option value="TA">TA</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div style="padding:0 30px 16px">
+  <div class="card" style="padding:20px;overflow-x:auto">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+      <span style="font-size:0.75rem;color:var(--muted)">Total SBD Value</span>
+      <span id="treeTotalSbd" style="font-size:1.3rem;font-weight:700;color:var(--cyan)">--</span>
+      <button onclick="resetTree()" style="margin-left:auto;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:0.7rem;color:var(--muted);cursor:pointer">Reset All</button>
+    </div>
+    <div id="treeBreadcrumb" style="font-size:0.68rem;color:var(--muted);margin-bottom:10px;min-height:18px"></div>
+    <div id="treeContainer" style="display:flex;gap:0;min-height:500px;position:relative"></div>
+  </div>
+</div>
+
+<div class="footer"><!--TS_START-->NEVER_BUILT<!--TS_END--> &middot; Source: SME_Quote Report (New).xlsx &middot; Sheet: SME Quote &amp; Billing</div>
+</div>
+
+<div id="pageLeadtracker" style="display:none">
+<div class="header">
+  <h1>Lead Tracker</h1>
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filter-label">Year (Enquiry Date)</span>
+      <div class="multi-select" id="leadYearFilter">
+        <div class="multi-btn" id="leadYearBtn">All</div>
+        
+        <div class="multi-panel" id="leadYearPanel">
+          <label><input type="checkbox" value="__all__" checked onchange="toggleAll(this,'lead-yr-cb');onLeadFilterChange()"> All</label>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Month</span>
+      <div class="multi-select" id="leadMonthFilter">
+        <div class="multi-btn" id="leadMonthBtn">All</div>
+        <div class="multi-panel" id="leadMonthPanel">
+          <label><input type="checkbox" value="__all__" checked onchange="toggleAll(this,'lead-mo-cb');onLeadFilterChange()"> All</label>
+          <label><input type="checkbox" class="lead-mo-cb" value="01" checked onchange="uncheckAll('lead-mo-cb');onLeadFilterChange()"> Jan</label>
+          <label><input type="checkbox" class="lead-mo-cb" value="02" checked onchange="uncheckAll('lead-mo-cb');onLeadFilterChange()"> Feb</label>
+          <label><input type="checkbox" class="lead-mo-cb" value="03" checked onchange="uncheckAll('lead-mo-cb');onLeadFilterChange()"> Mar</label>
+          <label><input type="checkbox" class="lead-mo-cb" value="04" checked onchange="uncheckAll('lead-mo-cb');onLeadFilterChange()"> Apr</label>
+          <label><input type="checkbox" class="lead-mo-cb" value="05" checked onchange="uncheckAll('lead-mo-cb');onLeadFilterChange()"> May</label>
+          <label><input type="checkbox" class="lead-mo-cb" value="06" checked onchange="uncheckAll('lead-mo-cb');onLeadFilterChange()"> Jun</label>
+          <label><input type="checkbox" class="lead-mo-cb" value="07" checked onchange="uncheckAll('lead-mo-cb');onLeadFilterChange()"> Jul</label>
+          <label><input type="checkbox" class="lead-mo-cb" value="08" checked onchange="uncheckAll('lead-mo-cb');onLeadFilterChange()"> Aug</label>
+          <label><input type="checkbox" class="lead-mo-cb" value="09" checked onchange="uncheckAll('lead-mo-cb');onLeadFilterChange()"> Sep</label>
+          <label><input type="checkbox" class="lead-mo-cb" value="10" checked onchange="uncheckAll('lead-mo-cb');onLeadFilterChange()"> Oct</label>
+          <label><input type="checkbox" class="lead-mo-cb" value="11" checked onchange="uncheckAll('lead-mo-cb');onLeadFilterChange()"> Nov</label>
+          <label><input type="checkbox" class="lead-mo-cb" value="12" checked onchange="uncheckAll('lead-mo-cb');onLeadFilterChange()"> Dec</label>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="padding:0 30px 16px">
+  <div class="card" style="padding:20px;overflow-x:auto">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+      <span style="font-size:0.75rem;color:var(--muted)">LEAD</span>
+      <span id="leadTotalCount" style="font-size:1.3rem;font-weight:700;color:var(--cyan)">--</span>
+      <button onclick="resetLeadTree()" style="margin-left:auto;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:0.7rem;color:var(--muted);cursor:pointer">Reset All</button>
+    </div>
+    <div id="leadBreadcrumb" style="font-size:0.68rem;color:var(--muted);margin-bottom:10px;min-height:18px"></div>
+    <div id="leadTreeContainer" style="display:flex;gap:0;min-height:500px;position:relative"></div>
+  </div>
+</div>
+
+<div class="footer"><!--TS_START-->NEVER_BUILT<!--TS_END--> &middot; Source: Lead Tracker Report_COE.xlsx + Lead Tracker Report_Online.xlsx + Lead Tracker Report_Partners.xlsx</div>
+</div>
+
+<div id="pageContractvalue" style="display:none">
+<div class="header">
+  <h1>SME Quote Report</h1>
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filter-label">Service</span>
+      <div class="multi-select" id="cvSvcFilter">
+        <div class="multi-btn" id="cvSvcBtn">All</div>
+        <div class="multi-panel" id="cvSvcPanel">
+          <label><input type="checkbox" value="__all__" checked onchange="toggleAll(this,'cv-svc-cb');refreshCV()"> All</label>
+          <label><input type="checkbox" class="cv-svc-cb" value="Account" checked onchange="uncheckAll('cv-svc-cb');refreshCV()"> Account</label>
+          <label><input type="checkbox" class="cv-svc-cb" value="Audit" checked onchange="uncheckAll('cv-svc-cb');refreshCV()"> Audit</label>
+          <label><input type="checkbox" class="cv-svc-cb" value="Audit (MBRS)" checked onchange="uncheckAll('cv-svc-cb');refreshCV()"> Audit (MBRS)</label>
+          <label><input type="checkbox" class="cv-svc-cb" value="Cosec" checked onchange="uncheckAll('cv-svc-cb');refreshCV()"> Cosec</label>
+          <label><input type="checkbox" class="cv-svc-cb" value="Outsourcing" checked onchange="uncheckAll('cv-svc-cb');refreshCV()"> Outsourcing</label>
+          <label><input type="checkbox" class="cv-svc-cb" value="Payroll" checked onchange="uncheckAll('cv-svc-cb');refreshCV()"> Payroll</label>
+          <label><input type="checkbox" class="cv-svc-cb" value="Tax" checked onchange="uncheckAll('cv-svc-cb');refreshCV()"> Tax</label>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Service (Acceptance)</span>
+      <div class="multi-select" id="cvSnFilter">
+        <div class="multi-btn" id="cvSnBtn">All</div>
+        <div class="multi-panel" id="cvSnPanel">
+          <label><input type="checkbox" value="__all__" checked onchange="toggleAll(this,'cv-sn-cb');refreshCV()"> All</label>
+          <label><input type="checkbox" class="cv-sn-cb" value="Recurring" checked onchange="uncheckAll('cv-sn-cb');refreshCV()"> Recurring</label>
+          <label><input type="checkbox" class="cv-sn-cb" value="One-Off" checked onchange="uncheckAll('cv-sn-cb');refreshCV()"> One-Off</label>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Tax Advisory</span>
+      <select class="filter-select ta-filter-select" onchange="onTaFilterChange(this.value)">
+        <option value="all">All</option>
+        <option value="non-TA" selected>non-TA</option>
+        <option value="TA">TA</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div id="cvCrossFilterBadge" style="display:none;padding:4px 30px 8px;"><span style="background:rgba(6,182,212,0.15);border:1px solid var(--cyan);border-radius:6px;padding:4px 12px;font-size:0.72rem;color:var(--cyan);display:inline-flex;align-items:center;gap:8px"><span id="cvCrossFilterLabel"></span><span onclick="cvCrossFilter.dim=null;cvCrossFilter.val=null;cvCrossFilter.chartId=null;refreshCV()" style="cursor:pointer;font-weight:700;font-size:0.85rem;color:var(--muted)">&times;</span></span></div>
+
+<div class="kpi-row" style="grid-template-columns:repeat(5,minmax(0,1fr))">
+  <div class="kpi"><div class="kpi-label">Acceptance Rate<span class="kpi-info" data-tip="cv-accrate">i</span></div><div class="kpi-val" id="cvAccRate">--</div><div class="kpi-delta" id="cvAccDelta"></div></div>
+  <div class="kpi"><div class="kpi-label">No. Accepted Quote (2026)<span class="kpi-info" data-tip="cv-accqty26">i</span></div><div class="kpi-val" id="cvAccQty26">--</div><div class="kpi-delta" id="cvAccQtyDelta26"></div></div>
+  <div class="kpi"><div class="kpi-label">No. Accepted Quote (Carry-over)<span class="kpi-info" data-tip="cv-accqty25">i</span></div><div class="kpi-val" id="cvAccQty25">--</div><div class="kpi-delta" id="cvAccQtyDelta25"></div></div>
+  <div class="kpi"><div class="kpi-label">Contract Value YTD<span class="kpi-info" data-tip="cv-cv">i</span></div><div class="kpi-val" id="cvValYtd">--</div><div class="kpi-delta" id="cvValYtdDelta"></div></div>
+  <div class="kpi"><div class="kpi-label">Quote Count (CY CV)<span class="kpi-info" data-tip="cv-count">i</span></div><div class="kpi-val" id="cvQuoteCount">--</div><div class="kpi-delta" id="cvQuoteCountDelta"></div></div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 30px 12px">
+  <div class="card"><h3>Contract Value YTD by Industry</h3>
+    <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>CY</span><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>LY</span></div>
+    <div class="chart-scroll"><div class="chart-box" id="cvBoxIndustry"><canvas id="cvChartIndustry"></canvas></div></div></div>
+  <div class="card"><h3>Contract Value YTD by Agent Entity</h3>
+    <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>CY</span><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>LY</span></div>
+    <div class="chart-scroll"><div class="chart-box" id="cvBoxAgent"><canvas id="cvChartAgent"></canvas></div></div></div>
+  <div class="card"><h3>Contract Value YTD by Service</h3>
+    <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>CY</span><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>LY</span></div>
+    <div class="chart-scroll"><div class="chart-box" id="cvBoxService"><canvas id="cvChartService"></canvas></div></div></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div class="card"><h3>Contract Value YTD by Sales Channel</h3>
+      <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>CY</span><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>LY</span></div>
+      <div class="chart-scroll"><div class="chart-box" id="cvBoxChannel"><canvas id="cvChartChannel"></canvas></div></div></div>
+    <div class="card"><h3>Contract Value YTD by Service Nature</h3>
+      <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>CY</span><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>LY</span></div>
+      <div class="chart-scroll"><div class="chart-box" id="cvBoxNature"><canvas id="cvChartNature"></canvas></div></div></div>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 30px 12px">
+  <div class="card"><h3>Conversion Days by Agent Entity</h3>
+    <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>BD</span><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>CM</span><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>COE-BD</span></div>
+    <div class="chart-box" id="cvBoxConvDonut" style="height:280px"><canvas id="cvChartConvDonut"></canvas></div></div>
+  <div class="card"><h3>Contract Value YTD by Agent Entity</h3>
+    <div class="legend-row"><span class="legend-item"><span class="legend-dot" style="background:var(--teal)"></span>BD</span><span class="legend-item"><span class="legend-dot" style="background:var(--cyan)"></span>COE-BD</span><span class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>CM</span></div>
+    <div class="chart-box" id="cvBoxAgentDonut" style="height:280px"><canvas id="cvChartAgentDonut"></canvas></div></div>
+</div>
+
+<div class="footer"><!--TS_START-->NEVER_BUILT<!--TS_END--> &middot; Source: SME_Quote Report (New).xlsx &middot; Sheet: SME Quote &amp; Billing</div>
+</div>
+
+<div id="pageCvtree" style="display:none">
+<div class="header">
+  <h1>SME Quote Tree</h1>
+  <div class="filters">
+    <div class="filter-group">
+      <span class="filter-label">Service</span>
+      <div class="multi-select" id="cvtSvcFilter">
+        <div class="multi-btn" id="cvtSvcBtn">All</div>
+        <div class="multi-panel" id="cvtSvcPanel">
+          <label><input type="checkbox" value="__all__" checked onchange="toggleAll(this,'cvt-svc-cb');renderCVTree()"> All</label>
+          <label><input type="checkbox" class="cvt-svc-cb" value="Account" checked onchange="uncheckAll('cvt-svc-cb');renderCVTree()"> Account</label>
+          <label><input type="checkbox" class="cvt-svc-cb" value="Audit" checked onchange="uncheckAll('cvt-svc-cb');renderCVTree()"> Audit</label>
+          <label><input type="checkbox" class="cvt-svc-cb" value="Audit (MBRS)" checked onchange="uncheckAll('cvt-svc-cb');renderCVTree()"> Audit (MBRS)</label>
+          <label><input type="checkbox" class="cvt-svc-cb" value="Cosec" checked onchange="uncheckAll('cvt-svc-cb');renderCVTree()"> Cosec</label>
+          <label><input type="checkbox" class="cvt-svc-cb" value="Outsourcing" checked onchange="uncheckAll('cvt-svc-cb');renderCVTree()"> Outsourcing</label>
+          <label><input type="checkbox" class="cvt-svc-cb" value="Payroll" checked onchange="uncheckAll('cvt-svc-cb');renderCVTree()"> Payroll</label>
+          <label><input type="checkbox" class="cvt-svc-cb" value="Tax" checked onchange="uncheckAll('cvt-svc-cb');renderCVTree()"> Tax</label>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Service Nature</span>
+      <div class="multi-select" id="cvtSnFilter">
+        <div class="multi-btn" id="cvtSnBtn">All</div>
+        <div class="multi-panel" id="cvtSnPanel">
+          <label><input type="checkbox" value="__all__" checked onchange="toggleAll(this,'cvt-sn-cb');renderCVTree()"> All</label>
+          <label><input type="checkbox" class="cvt-sn-cb" value="Recurring" checked onchange="uncheckAll('cvt-sn-cb');renderCVTree()"> Recurring</label>
+          <label><input type="checkbox" class="cvt-sn-cb" value="One-Off" checked onchange="uncheckAll('cvt-sn-cb');renderCVTree()"> One-Off</label>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Tax Advisory</span>
+      <select class="filter-select ta-filter-select" onchange="onTaFilterChange(this.value)">
+        <option value="all">All</option>
+        <option value="non-TA" selected>non-TA</option>
+        <option value="TA">TA</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Search Client / Invoice</span>
+      <input type="text" class="filter-select" id="cvtSearch" placeholder="Type client or invoice…" oninput="onCVTreeSearchChange(this.value)" style="min-width:220px;padding-right:14px">
+    </div>
+  </div>
+</div>
+
+<div style="padding:0 30px 16px">
+  <div class="card" style="padding:20px;overflow-x:auto">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px">
+      <span style="font-size:0.75rem;color:var(--muted)">Total Contract Value</span>
+      <span id="cvTreeTotal" style="font-size:1.3rem;font-weight:700;color:var(--cyan)">--</span>
+      <button onclick="resetCVTree()" style="margin-left:auto;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:0.7rem;color:var(--muted);cursor:pointer">Reset All</button>
+    </div>
+    <div id="cvTreeBreadcrumb" style="font-size:0.68rem;color:var(--muted);margin-bottom:10px;min-height:18px"></div>
+    <div id="cvTreeContainer" style="display:flex;gap:0;min-height:500px;position:relative"></div>
+  </div>
+</div>
+
+<div class="footer"><!--TS_START-->NEVER_BUILT<!--TS_END--> &middot; Source: SME_Quote Report (New).xlsx &middot; Sheet: SME Quote &amp; Billing</div>
+</div>
+
+
+<div id="pageQvbPre2026" style="display:none">
+<div class="qvb-header">
+  <h1>Quote Vs Billing — Before 2026</h1>
+  <div class="qvb-filter-row">
+    <div class="filter-group">
+      <span class="filter-label">Billing Month</span>
+      <div class="multi-select">
+        <div class="multi-btn" id="bmBtn_pre26">All</div>
+        <div class="multi-panel" id="bmPanel_pre26"></div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Tax Advisory</span>
+      <select class="filter-select ta-filter-select" onchange="onTaFilterChange(this.value)">
+        <option value="all">All</option>
+        <option value="non-TA" selected>non-TA</option>
+        <option value="TA">TA</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Search Client / Invoice</span>
+      <input type="text" class="filter-select qvb-search-input" id="qvbSearch_pre26" placeholder="Type client or invoice…" oninput="onQvbSearchChange('pre26', this.value)" style="min-width:220px;padding-right:14px">
+    </div>
+  </div>
+</div>
+<div style="padding:0 30px 16px">
+  <div class="qvb-kpi-pair" style="display:flex;justify-content:center;gap:28px;margin:0 auto 18px;max-width:1000px">
+    <div class="kpi"><div class="kpi-label">CY Contract Value<span class="kpi-info" data-tip="qvb-cyv">i</span></div><div class="kpi-val" id="qvbCYV_pre26">--</div></div>
+    <div class="kpi"><div class="kpi-label">Billing To Date<span class="kpi-info" data-tip="qvb-bill">i</span></div><div class="kpi-val" id="qvbBilling_pre26" style="color:var(--amber)">--</div></div>
+    <div class="kpi"><div class="kpi-label">Unbilled Balance<span class="kpi-info" data-tip="qvb-unb">i</span></div><div class="kpi-val" id="qvbRemaining_pre26" style="color:var(--teal)">--</div></div>
+  </div>
+  <div class="card" style="overflow-x:auto">
+    <table class="billing-table"><thead><tr><th>ENTITY</th><th>Qty</th><th>CY Contract Value</th><th>Qty</th><th>Billing To Date</th><th>% Unbilled</th><th>Unbilled Balance</th></tr></thead>
+    <tbody id="qvbTbody_pre26"></tbody></table>
+  </div>
+</div>
+<div class="card" style="margin:0 30px 16px;overflow-x:auto">
+  <h3>Contract Value by Industry</h3>
+  <div class="chart-scroll" style="overflow-y:auto;max-height:340px"><div class="chart-box" id="qvbIndBox_pre26" style="height:500px"><canvas id="qvbIndChart_pre26"></canvas></div></div>
+</div>
+<div class="footer"><!--TS_START-->NEVER_BUILT<!--TS_END--> &middot; Source: SME_Quote Report (New).xlsx &middot; Sheet: SME Quote &amp; Billing</div>
+</div>
+
+<div id="pageQvb2026" style="display:none">
+<div class="qvb-header">
+  <h1>Quote Vs Billing — 2026</h1>
+  <div class="qvb-filter-row">
+    <div class="filter-group">
+      <span class="filter-label">Billing Month</span>
+      <div class="multi-select">
+        <div class="multi-btn" id="bmBtn_y26">All</div>
+        <div class="multi-panel" id="bmPanel_y26"></div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Tax Advisory</span>
+      <select class="filter-select ta-filter-select" onchange="onTaFilterChange(this.value)">
+        <option value="all">All</option>
+        <option value="non-TA" selected>non-TA</option>
+        <option value="TA">TA</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Search Client / Invoice</span>
+      <input type="text" class="filter-select qvb-search-input" id="qvbSearch_y26" placeholder="Type client or invoice…" oninput="onQvbSearchChange('y26', this.value)" style="min-width:220px;padding-right:14px">
+    </div>
+  </div>
+</div>
+<div style="padding:0 30px 16px">
+  <div class="qvb-kpi-pair" style="display:flex;justify-content:center;gap:28px;margin:0 auto 18px;max-width:1000px">
+    <div class="kpi"><div class="kpi-label">CY Contract Value<span class="kpi-info" data-tip="qvb-cyv">i</span></div><div class="kpi-val" id="qvbCYV_y26">--</div></div>
+    <div class="kpi"><div class="kpi-label">Billing To Date<span class="kpi-info" data-tip="qvb-bill">i</span></div><div class="kpi-val" id="qvbBilling_y26" style="color:var(--amber)">--</div></div>
+    <div class="kpi"><div class="kpi-label">Unbilled Balance<span class="kpi-info" data-tip="qvb-unb">i</span></div><div class="kpi-val" id="qvbRemaining_y26" style="color:var(--teal)">--</div></div>
+  </div>
+  <div class="card" style="overflow-x:auto">
+    <table class="billing-table"><thead><tr><th>ENTITY</th><th>Qty</th><th>CY Contract Value</th><th>Qty</th><th>Billing To Date</th><th>% Unbilled</th><th>Unbilled Balance</th></tr></thead>
+    <tbody id="qvbTbody_y26"></tbody></table>
+  </div>
+</div>
+<div class="card" style="margin:0 30px 16px;overflow-x:auto">
+  <h3>Contract Value by Industry</h3>
+  <div class="chart-scroll" style="overflow-y:auto;max-height:340px"><div class="chart-box" id="qvbIndBox_y26" style="height:500px"><canvas id="qvbIndChart_y26"></canvas></div></div>
+</div>
+<div class="footer"><!--TS_START-->NEVER_BUILT<!--TS_END--> &middot; Source: SME_Quote Report (New).xlsx &middot; Sheet: SME Quote &amp; Billing</div>
+</div>
+
+<div id="pageQvbOverall" style="display:none">
+<div class="qvb-header">
+  <h1>Quote Vs Billing — Overall</h1>
+  <div class="qvb-filter-row">
+    <div class="filter-group">
+      <span class="filter-label">Billing Month</span>
+      <div class="multi-select">
+        <div class="multi-btn" id="bmBtn_all">All</div>
+        <div class="multi-panel" id="bmPanel_all"></div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Tax Advisory</span>
+      <select class="filter-select ta-filter-select" onchange="onTaFilterChange(this.value)">
+        <option value="all">All</option>
+        <option value="non-TA" selected>non-TA</option>
+        <option value="TA">TA</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Search Client / Invoice</span>
+      <input type="text" class="filter-select qvb-search-input" id="qvbSearch_all" placeholder="Type client or invoice…" oninput="onQvbSearchChange('all', this.value)" style="min-width:220px;padding-right:14px">
+    </div>
+  </div>
+</div>
+<div style="padding:0 30px 16px">
+  <div class="qvb-kpi-pair" style="display:flex;justify-content:center;gap:28px;margin:0 auto 18px;max-width:1000px">
+    <div class="kpi"><div class="kpi-label">CY Contract Value<span class="kpi-info" data-tip="qvb-cyv">i</span></div><div class="kpi-val" id="qvbCYV_all">--</div></div>
+    <div class="kpi"><div class="kpi-label">Billing To Date<span class="kpi-info" data-tip="qvb-bill">i</span></div><div class="kpi-val" id="qvbBilling_all" style="color:var(--amber)">--</div></div>
+    <div class="kpi"><div class="kpi-label">Unbilled Balance<span class="kpi-info" data-tip="qvb-unb">i</span></div><div class="kpi-val" id="qvbRemaining_all" style="color:var(--teal)">--</div></div>
+  </div>
+  <div class="card" style="overflow-x:auto">
+    <table class="billing-table"><thead><tr><th>ENTITY</th><th>Qty</th><th>CY Contract Value</th><th>Qty</th><th>Billing To Date</th><th>% Unbilled</th><th>Unbilled Balance</th></tr></thead>
+    <tbody id="qvbTbody_all"></tbody></table>
+  </div>
+</div>
+<div class="card" style="margin:0 30px 16px;overflow-x:auto">
+  <h3>Contract Value by Industry</h3>
+  <div class="chart-scroll" style="overflow-y:auto;max-height:340px"><div class="chart-box" id="qvbIndBox_all" style="height:500px"><canvas id="qvbIndChart_all"></canvas></div></div>
+</div>
+<div class="footer"><!--TS_START-->NEVER_BUILT<!--TS_END--> &middot; Source: SME_Quote Report (New).xlsx &middot; Sheet: SME Quote &amp; Billing</div>
+</div>
+
+</div>
+
+<script>
+(function(){
+  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  if (window.DATE_MONTHS && window.DATE_MONTHS.length) {
+    var months = window.DATE_MONTHS;
+    var def_from = window.DEFAULT_FROM || months[0];
+    var def_to   = window.DEFAULT_TO   || months[months.length-1];
+    function opts(selected){
+      var out = '';
+      for (var i=months.length-1; i>=0; i--) {
+        var ym = months[i];
+        var y = ym.substring(0,4), m = parseInt(ym.substring(5,7),10);
+        out += '<option value="'+ym+'"'+(ym===selected?' selected':'')+'>'+y+' '+MONTHS[m-1]+'</option>';
+      }
+      return out;
+    }
+    ['fSignedFrom','fQuoteFrom'].forEach(function(id){
+      var el = document.getElementById(id); if (el) el.innerHTML = opts(def_from);
+    });
+    ['fSignedTo','fQuoteTo'].forEach(function(id){
+      var el = document.getElementById(id); if (el) el.innerHTML = opts(def_to);
+    });
+  }
+  if (window.DASHBOARD_TS) {
+    try {
+      var lu = document.getElementById('lastUpdated'); if (lu) lu.textContent = window.DASHBOARD_TS;
+      var footers = document.getElementsByClassName('footer');
+      for (var i=0; i<footers.length; i++) {
+        footers[i].innerHTML = footers[i].innerHTML.replace(/<!--TS_START-->[\s\S]*?<!--TS_END-->/g,
+          '<!--TS_START-->'+window.DASHBOARD_TS+'<!--TS_END-->');
+      }
+    } catch(_){}
+  }
+  var btn = document.getElementById('refreshBtn');
+  var status = document.getElementById('refreshStatus');
+  var iconEl = document.getElementById('refreshBtnIcon');
+  var labelEl = document.getElementById('refreshBtnLabel');
+  var refreshing = false;
+  function setStat(t,c){ if(status){status.textContent=t||'';status.className='refresh-status'+(c?' '+c:'');} }
+  function setRefreshing(on){
+    if (!btn) return;
+    if (on) {
+      btn.disabled = true; btn.classList.add('refreshing');
+      if (iconEl) iconEl.innerHTML = '<span class="refresh-spinner"></span>';
+      if (labelEl) labelEl.textContent = 'Refreshing...';
+    } else {
+      btn.disabled = false; btn.classList.remove('refreshing','cooldown');
+      if (iconEl) iconEl.textContent = '↻';
+      if (labelEl) labelEl.textContent = 'Refresh now';
+    }
+  }
+  function onClick(){
+    if (refreshing) return;
+    var endpoint = window.__REFRESH_ENDPOINT__ || '';
+    if (!endpoint || endpoint.indexOf('@@') !== -1) {
+      setStat('Refresh endpoint not configured', 'error'); return;
+    }
+    refreshing = true;
+    setRefreshing(true);
+    setStat('Refreshing data... (about 1 minute)', 'loading');
+    var ctrl = new AbortController();
+    var to = setTimeout(function(){ ctrl.abort(); }, 240000);
+    fetch(endpoint, { method:'POST', signal: ctrl.signal })
+      .then(function(resp){
+        clearTimeout(to);
+        if (resp.status === 409) return resp.json().then(function(b){ throw new Error(b.message || 'Another refresh in progress'); });
+        if (!resp.ok) return resp.text().then(function(t){ throw new Error('Server '+resp.status+': '+(t||'').substring(0,200)); });
+        return resp.json();
+      })
+      .then(function(){
+        var u = new URL(window.location.href);
+        u.searchParams.set('refreshed', String(Date.now()));
+        window.location.href = u.toString();
+      })
+      .catch(function(err){
+        clearTimeout(to);
+        refreshing = false;
+        var msg = (err && err.name === 'AbortError') ? 'Refresh timed out after 4 minutes.' : ((err && err.message) || 'Unknown error');
+        setStat(msg, 'error');
+        var sec = 30;
+        btn.disabled = true; btn.classList.add('cooldown');
+        if (labelEl) labelEl.textContent = 'Wait '+sec+'s';
+        var iv = setInterval(function(){
+          sec--;
+          if (sec <= 0) { clearInterval(iv); setRefreshing(false); return; }
+          if (labelEl) labelEl.textContent = 'Wait '+sec+'s';
+        }, 1000);
+      });
+  }
+  if (btn) btn.addEventListener('click', onClick);
+
+  try {
+    var p = new URLSearchParams(window.location.search);
+    if (p.has('refreshed')) {
+      setStat('Last refreshed: just now', 'success');
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  } catch(_){}
+})();
+
+function showPage(page){
+  var pages=['dashboard','quotetree','leadtracker','contractvalue','cvtree','qvbPre2026','qvb2026','qvbOverall'];
+  var navMap={dashboard:'navDashboard',quotetree:'navQuotetree',leadtracker:'navLeadtracker',contractvalue:'navContractvalue',cvtree:'navCvtree',qvbPre2026:'navQvbPre2026',qvb2026:'navQvb2026',qvbOverall:'navQvbOverall'};
+  var pageMap={dashboard:'pageDashboard',quotetree:'pageQuotetree',leadtracker:'pageLeadtracker',contractvalue:'pageContractvalue',cvtree:'pageCvtree',qvbPre2026:'pageQvbPre2026',qvb2026:'pageQvb2026',qvbOverall:'pageQvbOverall'};
+  var titleMap={dashboard:'SME Quote Report',quotetree:'SME Quote Tree',leadtracker:'Lead Tracker',contractvalue:'SME Quote Report',cvtree:'SME Quote Tree',qvbPre2026:'Quote Vs Billing — Before 2026',qvb2026:'Quote Vs Billing — 2026',qvbOverall:'Quote Vs Billing — Overall'};
+  var titleEl=document.getElementById('globalPageTitle'); if(titleEl) titleEl.textContent=titleMap[page]||'';
+  pages.forEach(function(p){
+    var el=document.getElementById(pageMap[p]);if(el)el.style.display=p===page?'block':'none';
+    var nav=document.getElementById(navMap[p]);if(nav)nav.classList.toggle('active',p===page);
+  });
+  if(page==='dashboard' && typeof refresh==='function') refresh();
+  if(page==='qvbPre2026' && typeof refreshQVB==='function') refreshQVB('pre26');
+  if(page==='qvb2026' && typeof refreshQVB==='function') refreshQVB('y26');
+  if(page==='qvbOverall' && typeof refreshQVB==='function') refreshQVB('all');
+}
+</script>
+
+<script>
+var _chartOK=typeof Chart!=='undefined';
+if(_chartOK){Chart.defaults.font.family="'Segoe UI',system-ui,sans-serif";Chart.defaults.font.size=10;Chart.defaults.color='#94a3b8';}
+const CYC='rgba(6,182,212,0.85)',LYC='rgba(20,184,166,0.5)';
+var AG_COLORS={'COE-BD':'rgba(6,182,212,0.85)','BD':'rgba(20,184,166,0.7)','CM':'rgba(16,185,129,0.7)','GBS-BD':'rgba(148,163,184,0.5)','HQ-BD':'rgba(99,102,241,0.6)','(Blank)':'rgba(244,114,182,0.5)'};
+function agColor(name){return AG_COLORS[name]||'rgba(148,163,184,0.4)'}
+
+if (typeof ROWS === 'undefined') var ROWS = [];
+if (typeof LEADS === 'undefined') var LEADS = [];
+
+(function(){
+  var coePositions = {'Assistant Manager':1,'Manager':1,'Supervisor':1,'Senior Manager':1,'Associate':1,'Associate Director':1,'Head':1,'Senior':1,'Audit Partner':1,'Manager-Resigned':1};
+  ROWS.forEach(function(r){
+    if(!r.pbl || r.pbl === ''){
+      if(r.pos === 'Non-CoE' || r.pos === 'Non-CoE_Online'){
+        r.pbl = 'Non-CoE Staff';
+      } else if(r.pos && r.pos !== '' && coePositions[r.pos]){
+        r.pbl = 'CoE Staff';
+      }
+    }
+  });
+})();
+(function(){
+  var monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+  ROWS.forEach(function(r){
+    if(r.sb && r.sb.indexOf('-') > -1){
+      var parts = r.sb.split('-');
+      var m = parseInt(parts[1], 10);
+      r.mn = (m >= 1 && m <= 12) ? monthNames[m] : '';
+    } else {
+      r.mn = '';
+    }
+  });
+})();
+function fmt(v){if(v==null)return'--';return v>=1e6?(v/1e6).toFixed(2)+'M':v>=1e3?Math.round(v/1e3)+'K':v.toString()}
+function pct(v,t){return t>0?(v/t*100).toFixed(1)+'%':'0%'}
+function fmtPct(v){return v!=null?(v*100).toFixed(2)+'%':'--'}
+function deltaHtml(cy,ly,suffix){
+  if(ly==null||ly===0) return '<span class="delta-up">&#9650;LY: -- </span>';
+  var ch=ly!==0?((cy-ly)/ly*100).toFixed(1):0;
+  var cls=parseFloat(ch)>=0?'delta-up':'delta-down';
+  var arrow=parseFloat(ch)>=0?'&#9650;':'&#9660;';
+  var lyStr=suffix==='%'?fmtPct(ly):fmt(ly);
+  return '<span class="'+cls+'">'+arrow+' LY: '+lyStr+' '+arrow+' '+ch+'%</span>';
+}
+
+function gv(id){return document.getElementById(id).value}
+function getChecked(cls){
+  var cbs=[].slice.call(document.querySelectorAll('.'+cls));
+  var checked=cbs.filter(function(c){return c.checked});
+  return checked.length===0||checked.length===cbs.length?null:checked.map(function(c){return c.value});
+}
+function toggleAll(el,cls){document.querySelectorAll('.'+cls).forEach(function(c){c.checked=el.checked})}
+function uncheckAll(cls){
+  var cbs=[].slice.call(document.querySelectorAll('.'+cls));
+  var allCb=cbs[0].closest('.multi-panel').querySelector('input[value="__all__"]');
+  allCb.checked=cbs.every(function(c){return c.checked});
+}
+function updateBtnLabel(cls,btnId){
+  var cbs=[].slice.call(document.querySelectorAll('.'+cls));
+  var checked=cbs.filter(function(c){return c.checked});
+  var btn=document.getElementById(btnId);
+  if(checked.length===0||checked.length===cbs.length) btn.textContent='All';
+  else if(checked.length===1) btn.textContent=checked[0].value;
+  else btn.textContent=checked.length+' selected';
+}
+
+document.addEventListener('click',function(e){
+  if(!e.target.closest('#svcFilter')) document.getElementById('svcPanel').classList.remove('open');
+  if(!e.target.closest('#snFilter')) document.getElementById('snPanel').classList.remove('open');
+  if(!e.target.closest('#cvSvcFilter')){var p=document.getElementById('cvSvcPanel');if(p)p.classList.remove('open')}
+  if(!e.target.closest('#cvSnFilter')){var p2=document.getElementById('cvSnPanel');if(p2)p2.classList.remove('open')}
+  if(!e.target.closest('#cvtSvcFilter')){var p3=document.getElementById('cvtSvcPanel');if(p3)p3.classList.remove('open')}
+  if(!e.target.closest('#cvtSnFilter')){var p4=document.getElementById('cvtSnPanel');if(p4)p4.classList.remove('open')}
+  if(!e.target.closest('#svcFilter2')){var p5=document.getElementById('qtSvcPanel');if(p5)p5.classList.remove('open')}
+  if(!e.target.closest('#snFilter2')){var p6=document.getElementById('qtSnPanel');if(p6)p6.classList.remove('open')}
+  if(!e.target.closest('#leadYearFilter')){var p7=document.getElementById('leadYearPanel');if(p7)p7.classList.remove('open')}
+  if(!e.target.closest('#leadMonthFilter')){var p8=document.getElementById('leadMonthPanel');if(p8)p8.classList.remove('open')}
+  ['pre26','y26','all'].forEach(function(fid){var bp=document.getElementById('bmPanel_'+fid);if(bp&&!e.target.closest('#bmPanel_'+fid)&&!e.target.closest('#bmBtn_'+fid))bp.classList.remove('open');});
+});
+
+document.querySelectorAll('.multi-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var panel=this.nextElementSibling;
+    if(panel&&panel.classList.contains('multi-panel')) panel.classList.toggle('open');
+  });
+});
+
+function ymToNum(ym){var parts=ym.split('-').map(Number);return parts[0]*12+parts[1]}
+function shiftYm(ym,dy){var parts=ym.split('-').map(Number);return(parts[0]+dy).toString().padStart(4,'0')+'-'+parts[1].toString().padStart(2,'0')}
+
+function computeAll(){
+  var sfrom=gv('fSignedFrom'),sto=gv('fSignedTo');
+  var qfrom=gv('fQuoteFrom'),qto=gv('fQuoteTo');
+  var svcF=getChecked('svc-cb');
+  var snF=getChecked('sn-cb');
+  var sfn=ymToNum(sfrom),stn=ymToNum(sto);
+  var qfn=ymToNum(qfrom),qtn=ymToNum(qto);
+  var cyYear=parseInt(qfrom.split('-')[0]);
+  var lyYear=cyYear-1;
+  var lqfrom=shiftYm(qfrom,-1),lqto=shiftYm(qto,-1);
+  var lsfrom=shiftYm(sfrom,-1),lsto=shiftYm(sto,-1);
+  var lqfn=ymToNum(lqfrom),lqtn=ymToNum(lqto);
+  var lsfn=ymToNum(lsfrom),lstn=ymToNum(lsto)+1;
+
+  var base=ROWS.filter(function(r){return taMatchesRow(r)});
+  if(svcF) base=base.filter(function(r){return svcF.indexOf(r.svc)>=0});
+  if(snF) base=base.filter(function(r){return snF.indexOf(r.sn)>=0});
+  if(crossFilter.dim){base=base.filter(function(r){return r[crossFilter.dim]===crossFilter.val})}
+
+  function ymNum(d){if(!d)return null;var y=parseInt(d.substring(0,4)),m=parseInt(d.substring(5,7));return y*12+m}
+  function ym(d){return d?d.substring(0,7):null}
+
+  var cyQR=base.filter(function(r){var n=ymNum(r.qd);return n&&n>=qfn&&n<=qtn});
+  var cyQYtd=new Set(cyQR.map(function(r){return r.eq})).size;
+  var cyAYtd=new Set(cyQR.filter(function(r){return r.st==='Accepted'}).map(function(r){return r.eq})).size;
+  var cyPre=base.filter(function(r){var qn=ymNum(r.qd);var sn=ymNum(r.sb);return qn&&qn<ymToNum(cyYear+'-01')&&sn&&sn>=qfn&&sn<=qtn});
+  var cyPreQ=new Set(cyPre.map(function(r){return r.eq})).size;
+  var cyPreA=new Set(cyPre.filter(function(r){return r.st==='Accepted'}).map(function(r){return r.eq})).size;
+  var cyDenom=cyQYtd+cyPreQ;
+  var cyAccT=cyAYtd+cyPreA;
+  var cyAccRate=cyDenom>0?cyAccT/cyDenom:0;
+
+  var lyQR=base.filter(function(r){var n=ymNum(r.qd);return n&&n>=lqfn&&n<=lqtn});
+  var lyQYtd=new Set(lyQR.map(function(r){return r.eq})).size;
+  var lyAYtd=new Set(lyQR.filter(function(r){return r.st==='Accepted'}).map(function(r){return r.eq})).size;
+  var lyPre=base.filter(function(r){var qn=ymNum(r.qd);var sn=ymNum(r.sb);return qn&&qn<lqfn&&sn&&sn>=lqfn&&sn<=lqtn});
+  var lyPreQ=new Set(lyPre.map(function(r){return r.eq})).size;
+  var lyPreA=new Set(lyPre.filter(function(r){return r.st==='Accepted'}).map(function(r){return r.eq})).size;
+  var lyDenom=lyQYtd+lyPreQ;
+  var lyAccT=lyAYtd+lyPreA;
+  var lyAccRate=lyDenom>0?lyAccT/lyDenom:0;
+
+  var cySR=base.filter(function(r){var n=ymNum(r.sb);return n&&n>=sfn&&n<=stn});
+  var cySbdYtd=cySR.reduce(function(s,r){return s+(r.sbd||0)},0);
+  var cySbdMtd=cySR.filter(function(r){return ym(r.sb)===sto}).reduce(function(s,r){return s+(r.sbd||0)},0);
+  var lySR=base.filter(function(r){var n=ymNum(r.sb);return n&&n>=lsfn&&n<=lstn});
+  var lySbdYtd=lySR.reduce(function(s,r){return s+(r.sbd||0)},0);
+  var lySbdMtd=lySR.filter(function(r){return ym(r.sb)===lsto}).reduce(function(s,r){return s+(r.sbd||0)},0);
+
+  function aggSbd(rows,dim){var m={};rows.forEach(function(r){var k=r[dim]||'(Blank)';m[k]=(m[k]||0)+(r.sbd||0)});return m}
+  var cyByInd=aggSbd(cySR,'ind'),lyByInd=aggSbd(lySR,'ind');
+  var cyByAg=aggSbd(cySR,'ag'),lyByAg=aggSbd(lySR,'ag');
+  var cyBySvc=aggSbd(cySR,'svc'),lyBySvc=aggSbd(lySR,'svc');
+  var cyBySn=aggSbd(cySR,'sn'),lyBySn=aggSbd(lySR,'sn');
+  var cyBySrc=aggSbd(cySR,'src'),lyBySrc=aggSbd(lySR,'src');
+
+  var cyConv=cySR.filter(function(r){return r.st==='Accepted'&&r.qdue==='Signed'});
+  var convAvg={};
+  var convAg={};
+  cyConv.forEach(function(r){var k=r.ag||'(Blank)';if(!convAg[k])convAg[k]={t:0,c:0};convAg[k].t+=r.cd;convAg[k].c++});
+  for(var k in convAg) convAvg[k]=Math.round(convAg[k].t/convAg[k].c);
+
+  return {
+    cyAccRate:cyAccRate,lyAccRate:lyAccRate,cyAccT:cyAccT,lyAccT:lyAccT,cyDenom:cyDenom,lyDenom:lyDenom,
+    cyQYtd:cyQYtd,cyPreQ:cyPreQ,cyAYtd:cyAYtd,cyPreA:cyPreA,
+    cySbdYtd:cySbdYtd,lySbdYtd:lySbdYtd,cySbdMtd:cySbdMtd,lySbdMtd:lySbdMtd,
+    cyByInd:cyByInd,lyByInd:lyByInd,cyByAg:cyByAg,lyByAg:lyByAg,cyBySvc:cyBySvc,lyBySvc:lyBySvc,cyBySn:cyBySn,lyBySn:lyBySn,cyBySrc:cyBySrc,lyBySrc:lyBySrc,
+    convAvg:convAvg,cyByAg_sbd:cyByAg
+  };
+}
+
+var charts={};
+var crossFilter={dim:null,val:null,chartId:null};
+function toggleCrossFilter(dim,val,chartId){
+  if(crossFilter.dim===dim&&crossFilter.val===val){crossFilter.dim=null;crossFilter.val=null;crossFilter.chartId=null}
+  else{crossFilter.dim=dim;crossFilter.val=val;crossFilter.chartId=chartId}
+  refresh();
+}
+var ttEl=document.getElementById('chartTooltip');
+
+function extTT(getSbdCy,getSbdLy){
+  return function(ctx){
+    var chart=ctx.chart,tooltip=ctx.tooltip;
+    if(tooltip.opacity===0){ttEl.style.display='none';return}
+    var di=tooltip.dataPoints?tooltip.dataPoints[0].dataIndex:null;
+    if(di===null){ttEl.style.display='none';return}
+    var labels=chart.data.labels,ds=chart.data.datasets;
+    var h='<div class="tt-title">'+labels[di]+'</div>';
+    ds.forEach(function(d){
+      var v=d.data[di];
+      var tot=d.label==='CY'?getSbdCy():getSbdLy();
+      h+='<div class="tt-row"><span class="tt-dot" style="background:'+d.backgroundColor+'"></span>'+d.label+': '+fmt(v)+' ('+pct(v,tot)+')</div>';
+    });
+    ttEl.innerHTML=h;ttEl.style.display='block';
+    var pos=chart.canvas.getBoundingClientRect();
+    var left=pos.left+tooltip.caretX+12,top=pos.top+tooltip.caretY-20;
+    if(left+180>window.innerWidth)left-=200;
+    if(top<0)top=4;
+    ttEl.style.left=left+'px';ttEl.style.top=top+'px';
+  };
+}
+document.addEventListener('mousemove',function(e){if(!e.target.closest('.chart-box'))ttEl.style.display='none'});
+
+var lastData=null;
+
+function makeHbar(id,boxId,labels,cy,ly,cyTotal,lyTotal,dim){
+  if(!_chartOK)return;
+  if(charts[id]){charts[id].destroy();delete charts[id]}
+  var box=document.getElementById(boxId);
+  box.style.height=Math.max(80,labels.length*50)+'px';
+  box.innerHTML='<canvas id="'+id+'"></canvas>';
+  var cT=cyTotal||0,lT=lyTotal||0;
+  var isSource=crossFilter.chartId===id;
+  var selIdx=isSource?labels.indexOf(crossFilter.val):-1;
+  var cyBg=labels.map(function(_,i){return isSource&&selIdx>=0&&i!==selIdx?'rgba(6,182,212,0.25)':CYC});
+  var lyBg=labels.map(function(_,i){return isSource&&selIdx>=0&&i!==selIdx?'rgba(20,184,166,0.15)':LYC});
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'CY',data:cy,backgroundColor:cyBg,borderRadius:3,barPercentage:0.55,categoryPercentage:0.7},
+      {label:'LY',data:ly,backgroundColor:lyBg,borderRadius:3,barPercentage:0.55,categoryPercentage:0.7}
+    ]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:{duration:700,easing:'easeOutQuart'},animations:{x:{type:'number',easing:'easeOutQuart',duration:700,from:0}},
+      layout:{padding:{right:110}},
+      interaction:{mode:'y',intersect:false},
+      onClick:function(e){
+        if(!dim)return;
+        var chart=charts[id];
+        var els=chart.getElementsAtEventForMode(e, 'y', {intersect:false}, false);
+        if(!els.length)return;
+        var idx=els[0].index;
+        toggleCrossFilter(dim,labels[idx],id);
+      },
+      plugins:{legend:{display:false},tooltip:{enabled:false,external:extTT(function(){return lastData.cySbdYtd},function(){return lastData.lySbdYtd}),mode:'y',intersect:false}},
+      scales:{
+        x:{beginAtZero:true,ticks:{callback:function(v){return fmt(v)},font:{size:9}},grid:{color:'#1e293b'}},
+        y:{grid:{display:false},ticks:{font:{size:9},color:'#94a3b8'},afterFit:function(axis){axis.width=Math.max(axis.width,160)}}
+      }
+    },
+    plugins:[{
+      id:'barLabels_'+id,
+      afterDraw:function(chart){
+        var ctx2=chart.ctx;
+        chart.data.datasets.forEach(function(ds,dsIdx){
+          var meta=chart.getDatasetMeta(dsIdx);
+          var total=dsIdx===0?cT:lT;
+          meta.data.forEach(function(bar,i){
+            var val=ds.data[i];
+            if(val==null||val===0)return;
+            var p=total>0?(val/total*100).toFixed(1)+'%':'';
+            var label=fmt(val)+(p?' ('+p+')':'');
+            ctx2.save();
+            ctx2.font='bold 10px Segoe UI, system-ui, sans-serif';
+            ctx2.fillStyle=dsIdx===0?'#e2e8f0':'#94a3b8';
+            ctx2.textAlign='left';
+            ctx2.textBaseline='middle';
+            ctx2.fillText(label,bar.x+6,bar.y);
+            ctx2.restore();
+          });
+        });
+      }
+    }]
+  });
+}
+
+function makeDonut(id,boxId,labels,data,colors,labelFn,dim,crossFilterFn,crossFilterState){
+  if(!_chartOK)return;
+  if(charts[id]){charts[id].destroy();delete charts[id]}
+  var box=document.getElementById(boxId);
+  box.innerHTML='<canvas id="'+id+'"></canvas>';
+  var total=data.reduce(function(a,b){return a+b},0);
+  var cf=crossFilterState||crossFilter;
+  var isSource=cf.chartId===id;
+  var selIdx=isSource?labels.indexOf(cf.val):-1;
+  var bgColors=colors.map(function(c,i){
+    if(isSource&&selIdx>=0&&i!==selIdx){
+      return c.replace(/[\d.]+\)$/,'0.15)');
+    }
+    return c;
+  });
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'doughnut',
+    data:{labels:labels,datasets:[{data:data,backgroundColor:bgColors,borderWidth:2,borderColor:'#111827'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'55%',
+      onClick:function(e,els){
+        if(!els.length||!dim||!crossFilterFn)return;
+        var idx=els[0].index;
+        crossFilterFn(dim,labels[idx],id);
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:function(c){return c.label+': '+labelFn(c.parsed)+' ('+pct(c.parsed,total)+')'}}}
+      }
+    },
+    plugins:[{
+      id:'lbl_'+id,
+      afterDraw:function(chart){
+        var ctx2=chart.ctx;
+        chart.data.datasets[0].data.forEach(function(val,i){
+          var meta=chart.getDatasetMeta(0).data[i];
+          var xy=meta.tooltipPosition();
+          ctx2.save();ctx2.font='bold 11px Segoe UI';ctx2.fillStyle='#fff';ctx2.textAlign='center';ctx2.textBaseline='middle';
+          if(val>0) ctx2.fillText(labelFn(val)+' ('+pct(val,total)+')',xy.x,xy.y);
+          ctx2.restore();
+        });
+      }
+    }]
+  });
+}
+
+function sortedDim(cyMap,lyMap){
+  var allKeys=new Set([].concat(Object.keys(cyMap),Object.keys(lyMap)));
+  var arr=Array.from(allKeys).map(function(k){return {k:k,cy:cyMap[k]||0,ly:lyMap[k]||0}});
+  arr.sort(function(a,b){return b.cy-a.cy||b.ly-a.ly});
+  return {labels:arr.map(function(a){return a.k}),cy:arr.map(function(a){return a.cy}),ly:arr.map(function(a){return a.ly})};
+}
+
+var taFilter = 'non-TA';
+function taMatchesRow(r) { return taFilter === 'all' ? true : r.ta === taFilter; }
+function onTaFilterChange(val) {
+  taFilter = val;
+  document.querySelectorAll('.ta-filter-select').forEach(function(s){ s.value = val; });
+  if (typeof refresh === 'function')        refresh();
+  if (typeof refreshCV === 'function')      refreshCV();
+  if (typeof renderTree === 'function')     renderTree();
+  if (typeof renderCVTree === 'function')   renderCVTree();
+  if (typeof refreshQVB === 'function') { refreshQVB('pre26'); refreshQVB('y26'); refreshQVB('all'); }
+}
+
+function refresh(){
+  updateBtnLabel('svc-cb','svcBtn');
+  updateBtnLabel('sn-cb','snBtn');
+  var badge=document.getElementById('crossFilterBadge');
+  var dimNames={ind:'Industry',ag:'Agent Entity',svc:'Service',sn:'Service Nature',src:'Sales Channel'};
+  if(crossFilter.dim){badge.style.display='block';document.getElementById('crossFilterLabel').textContent='Filtered by '+dimNames[crossFilter.dim]+': '+crossFilter.val}
+  else{badge.style.display='none'}
+  var d=computeAll();
+  lastData=d;
+
+  document.getElementById('kAccRate').textContent=fmtPct(d.cyAccRate);
+  document.getElementById('kAccDelta').innerHTML=deltaHtml(d.cyAccRate,d.lyAccRate>0?d.lyAccRate:null,'%');
+  document.getElementById('kAccQty').textContent=d.cyAccT;
+  document.getElementById('kAccQtyDelta').innerHTML=deltaHtml(d.cyAccT,d.lyAccT||null);
+  document.getElementById('kSbdMtd').textContent=fmt(d.cySbdMtd);
+  document.getElementById('kSbdMtdDelta').innerHTML=deltaHtml(d.cySbdMtd,d.lySbdMtd||null);
+  document.getElementById('kSbdYtd').textContent=fmt(d.cySbdYtd);
+  document.getElementById('kSbdYtdDelta').innerHTML=deltaHtml(d.cySbdYtd,d.lySbdYtd||null);
+
+  var _fb = document.getElementById('formulaBox');
+  if (_fb) _fb.innerHTML=
+    '<strong>Formulas:</strong><br>'+
+    '<code>AcceptanceRate_YTD</code> = DIVIDE(<code>No. Accepted Quote YTD</code>, <code>Denominator_YTD</code>) &nbsp;|&nbsp; '+
+    '<code>No. Accepted Quote YTD</code> = '+d.cyAYtd+' + '+d.cyPreA+' = '+d.cyAccT+' &nbsp;|&nbsp; '+
+    '<code>Denominator_YTD</code> = '+d.cyQYtd+' + '+d.cyPreQ+' = '+d.cyDenom+' &nbsp;|&nbsp; '+
+    'All counts use <strong>DISTINCTCOUNT(ENTITY QUOTE)</strong>, filtered to Tax Advisory = ' + taFilter + '';
+
+  var ind=sortedDim(d.cyByInd,d.lyByInd);
+  makeHbar('chartIndustry','boxIndustry',ind.labels,ind.cy,ind.ly,d.cySbdYtd,d.lySbdYtd,'ind');
+  var ag=sortedDim(d.cyByAg,d.lyByAg);
+  makeHbar('chartAgent','boxAgent',ag.labels,ag.cy,ag.ly,d.cySbdYtd,d.lySbdYtd,'ag');
+  var svc=sortedDim(d.cyBySvc,d.lyBySvc);
+  makeHbar('chartService','boxService',svc.labels,svc.cy,svc.ly,d.cySbdYtd,d.lySbdYtd,'svc');
+  var sn=sortedDim(d.cyBySn,d.lyBySn);
+  makeHbar('chartNature','boxNature',sn.labels,sn.cy,sn.ly,d.cySbdYtd,d.lySbdYtd,'sn');
+  var src=sortedDim(d.cyBySrc,d.lyBySrc);
+  makeHbar('chartChannel','boxChannel',src.labels,src.cy,src.ly,d.cySbdYtd,d.lySbdYtd,'src');
+
+  var convLabels=Object.keys(d.convAvg).filter(function(k){return d.convAvg[k]>0}).sort(function(a,b){return d.convAvg[b]-d.convAvg[a]});
+  var convData=convLabels.map(function(a){return d.convAvg[a]||0});
+  var convColors=convLabels.map(function(a){return agColor(a)});
+  makeDonut('chartConvDonut','boxConvDonut',convLabels,convData,convColors,function(v){return v},'ag',toggleCrossFilter,crossFilter);
+
+  var sbdAgLabels=Object.keys(d.cyByAg).filter(function(k){return (d.cyByAg[k]||0)>0}).sort(function(a,b){return (d.cyByAg[b]||0)-(d.cyByAg[a]||0)});
+  var sbdDonutData=sbdAgLabels.map(function(a){return d.cyByAg[a]||0});
+  var sbdColors=sbdAgLabels.map(function(a){return agColor(a)});
+  makeDonut('chartAgentDonut','boxAgentDonut',sbdAgLabels,sbdDonutData,sbdColors,function(v){return fmt(v)},'ag',toggleCrossFilter,crossFilter);
+}
+
+
+function findBestLevel(data, levels, usedIdxs, valueKey){
+  for(var i = 0; i < levels.length; i++){
+    if(usedIdxs.indexOf(i) >= 0) continue;
+    return i;
+  }
+  return -1;
+}
+
+var TREE_LEVELS = [
+  {key:'yr',  label:'Year'},
+  {key:'ag',  label:'AGENT - ENTITY'},
+  {key:'svc', label:'SERVICES'},
+  {key:'an',  label:'AGENT NAME'},
+  {key:'src', label:'SOURCE (LEAD FROM)'},
+  {key:'pbl', label:'POSITION BY ...'},
+  {key:'pos', label:'POSITION'},
+  {key:'st',  label:'STATUS'},
+  {key:'bu',  label:'BU'},
+  {key:'ref', label:'REFERRED BY ...'},
+  {key:'ind', label:'INDUSTRY'},
+  {key:'cl',  label:'CLIENT'},
+  {key:'sc',  label:'SERVICE CYCLE'},
+  {key:'mn',  label:'Month'},
+  {key:'tamt',label:'[TASK] AMOUNT'}
+];
+
+var treeState = [];
+var treeNextLevel = -1; // User-selected next level (-1 = auto)
+
+function getTreeData(){
+  var data = ROWS.filter(function(r){return taMatchesRow(r)});
+  var svcF = getChecked('qt-svc-cb');
+  var snF = getChecked('qt-sn-cb');
+  if(svcF) data = data.filter(function(r){return svcF.indexOf(r.svc)>=0});
+  if(snF) data = data.filter(function(r){return snF.indexOf(r.sn)>=0});
+  return data;
+}
+
+function getFilteredTreeData(){
+  var data = getTreeData();
+  for(var i=0;i<treeState.length;i++){
+    var s = treeState[i];
+    var lvl = TREE_LEVELS[s.levelIdx];
+    data = data.filter(function(r){return fieldVal(r, lvl.key) === s.selectedValue});
+  }
+  return data;
+}
+
+function fieldVal(r, key){
+  if(key === 'ent'){
+    var eq = r.eq || '';
+    var parts = eq.split(' ');
+    return parts[1] || '(Blank)';
+  }
+  if(key === 'inv'){
+    var inv = (r.inv || '').toString().trim();
+    if(inv) return inv;
+    var rmk = (r.rmk || '').toString().trim();
+    if(rmk) return rmk;
+    return '(no invoice)';
+  }
+  var raw = r[key];
+  if(raw == null || raw === '') return '(Blank)';
+  if(key === 'tamt' && typeof raw === 'number') return Math.round(raw).toLocaleString();
+  return String(raw);
+}
+function aggByKey(data, key){
+  var map = {};
+  data.forEach(function(r){
+    var k = fieldVal(r, key);
+    if(!map[k]) map[k] = {label: k, sbd: 0, count: 0};
+    map[k].sbd += (r.sbd || 0);
+    map[k].count++;
+  });
+  return Object.values(map).sort(function(a,b){return b.sbd - a.sbd});
+}
+
+function fmtTree(v){
+  return Math.round(v).toLocaleString();
+}
+
+function renderTree(){
+  var container = document.getElementById('treeContainer');
+  if(!container) return;
+  container.innerHTML = '';
+
+  var allData = getTreeData();
+  var totalSbd = allData.reduce(function(s,r){return s + (r.sbd||0)}, 0);
+  document.getElementById('treeTotalSbd').textContent = fmtTree(totalSbd);
+
+  var breadcrumb = document.getElementById('treeBreadcrumb');
+  if(breadcrumb){
+    if(treeState.length === 0){
+      breadcrumb.innerHTML = '';
+    } else {
+      var bc = treeState.map(function(s,i){
+        var lvl = TREE_LEVELS[s.levelIdx];
+        return '<span style="cursor:pointer;text-decoration:underline" onclick="treeState=treeState.slice(0,'+ i +');renderTree()">' + 
+          lvl.label + ': ' + s.selectedValue + '</span>';
+      }).join(' <span style="color:var(--border)">&rsaquo;</span> ');
+      breadcrumb.innerHTML = bc;
+    }
+  }
+
+  var rootCol = makeTreeCol(-1, 'Total SBD Value', [{label:'Total SBD Value', sbd:totalSbd, count:allData.length}], -1, true);
+  container.appendChild(rootCol);
+
+  var filteredData = allData;
+  for(var i = 0; i < treeState.length; i++){
+    var s = treeState[i];
+    var lvl = TREE_LEVELS[s.levelIdx];
+    var agg = aggByKey(filteredData, lvl.key);
+    
+    container.appendChild(makeConnector(filteredData, s.selectedValue, lvl.key));
+    var col = makeTreeCol(s.levelIdx, lvl.label, agg, i, false);
+    container.appendChild(col);
+    
+    filteredData = filteredData.filter(function(r){return fieldVal(r, lvl.key) === s.selectedValue});
+  }
+
+  var usedIdxs = treeState.map(function(s){return s.levelIdx});
+  var nextLevelIdx;
+  if(treeNextLevel >= 0 && usedIdxs.indexOf(treeNextLevel) < 0){
+    nextLevelIdx = treeNextLevel;
+  } else {
+    treeNextLevel = -1;
+    nextLevelIdx = findBestLevel(filteredData, TREE_LEVELS, usedIdxs, 'sbd');
+  }
+  if(nextLevelIdx >= 0){
+    var nextLvl = TREE_LEVELS[nextLevelIdx];
+    var agg2 = aggByKey(filteredData, nextLvl.key);
+    if(agg2.length > 0){
+      container.appendChild(makeConnector(null, null, null));
+      var col2 = makeTreeCol(nextLevelIdx, nextLvl.label, agg2, treeState.length, false);
+      container.appendChild(col2);
+    }
+  }
+
+  container.scrollLeft = container.scrollWidth;
+}
+
+function makeConnector(data, selectedVal, key){
+  var div = document.createElement('div');
+  div.style.cssText = 'display:flex;flex-direction:column;justify-content:flex-start;flex-shrink:0;width:32px;padding-top:28px;position:relative';
+  
+  if(!data || !selectedVal){
+    div.innerHTML = '<div style="height:2px;background:var(--cyan);opacity:0.35;margin-top:16px"></div>';
+    return div;
+  }
+
+  var agg = aggByKey(data, key);
+  var selIdx = agg.findIndex(function(a){return a.label === selectedVal});
+  var itemH = 46;
+  var headerH = 28;
+  var startY = headerH + 16;
+  var selectedY = headerH + selIdx * (itemH + 3) + itemH/2;
+
+  var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', '32');
+  svg.setAttribute('height', Math.max(200, agg.length * (itemH+3) + headerH + 20));
+  svg.style.cssText = 'position:absolute;top:0;left:0;overflow:visible';
+
+  var line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line1.setAttribute('x1','0'); line1.setAttribute('y1', startY);
+  line1.setAttribute('x2','16'); line1.setAttribute('y2', startY);
+  line1.setAttribute('stroke','rgba(6,182,212,0.8)'); line1.setAttribute('stroke-width','2');
+  svg.appendChild(line1);
+
+  if(selIdx > 0){
+    var vline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    vline.setAttribute('x1','16'); vline.setAttribute('y1', startY);
+    vline.setAttribute('x2','16'); vline.setAttribute('y2', selectedY);
+    vline.setAttribute('stroke','rgba(6,182,212,0.8)'); vline.setAttribute('stroke-width','2');
+    svg.appendChild(vline);
+  }
+
+  var line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line2.setAttribute('x1','16'); line2.setAttribute('y1', selectedY);
+  line2.setAttribute('x2','32'); line2.setAttribute('y2', selectedY);
+  line2.setAttribute('stroke','rgba(6,182,212,0.8)'); line2.setAttribute('stroke-width','2');
+  svg.appendChild(line2);
+
+  div.appendChild(svg);
+  return div;
+}
+
+function makeTreeCol(levelIdx, title, items, stateIdx, isRoot){
+  var col = document.createElement('div');
+  col.style.cssText = 'flex-shrink:0;width:168px;display:flex;flex-direction:column;gap:0';
+
+  var header = document.createElement('div');
+  header.style.cssText = 'font-size:0.62rem;color:var(--cyan);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;padding:4px 8px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+  var isNextCol = (stateIdx === treeState.length && !isRoot);
+  if(isNextCol){
+    var sel = document.createElement('select');
+    sel.style.cssText = 'background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:2px 20px 2px 4px;font-size:0.62rem;color:var(--cyan);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;cursor:pointer;width:100%;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'8\' height=\'5\'%3E%3Cpath d=\'M0 0l4 5 4-5z\' fill=\'%2306b6d4\'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center';
+    var usedIdxs = treeState.map(function(s){return s.levelIdx});
+    for(var li=0;li<TREE_LEVELS.length;li++){
+      if(usedIdxs.indexOf(li)>=0) continue;
+      var opt = document.createElement('option');
+      opt.value = li;
+      opt.textContent = TREE_LEVELS[li].label;
+      if(li === levelIdx) opt.selected = true;
+      sel.appendChild(opt);
+    }
+    sel.addEventListener('change', function(){
+      var newIdx = parseInt(this.value);
+      treeNextLevel = newIdx;
+      renderTree();
+    });
+    header.appendChild(sel);
+  } else {
+    header.textContent = title;
+    header.title = title;
+  }
+  col.appendChild(header);
+
+  if(isRoot){
+    var box = document.createElement('div');
+    box.style.cssText = 'background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:10px 12px';
+    box.innerHTML = '<div style="font-size:0.7rem;font-weight:600;color:var(--text)">Total SBD Value</div>' +
+      '<div style="font-size:1.05rem;font-weight:700;color:var(--cyan);margin-top:2px">' + fmtTree(items[0].sbd) + '</div>';
+    col.appendChild(box);
+    return col;
+  }
+
+  var itemsDiv = document.createElement('div');
+  itemsDiv.style.cssText = 'display:flex;flex-direction:column;gap:3px;max-height:520px;overflow-y:auto;padding-right:2px';
+
+  var maxSbd = items.length > 0 ? Math.max.apply(null, items.map(function(i2){return i2.sbd})) : 1;
+  var selectedVal = stateIdx < treeState.length ? treeState[stateIdx].selectedValue : null;
+
+  items.forEach(function(item){
+    var row = document.createElement('div');
+    var isSelected = item.label === selectedVal;
+    var isClickable = stateIdx >= treeState.length;
+    var isSwappable = !isSelected && stateIdx < treeState.length;
+
+    row.style.cssText = 'position:relative;background:var(--card2);border-radius:4px;padding:5px 8px;cursor:' +
+      (isClickable || isSelected || isSwappable ? 'pointer' : 'default') + ';border:1px solid ' +
+      (isSelected ? 'var(--cyan)' : 'transparent') + ';' +
+      (isSelected ? 'background:rgba(6,182,212,0.12);box-shadow:0 0 8px rgba(6,182,212,0.3);' : '') +
+      (!isSelected && stateIdx < treeState.length ? 'opacity:0.25;' : '') +
+      'transition:opacity 0.15s,border-color 0.15s,box-shadow 0.15s;';
+
+    var barW = maxSbd > 0 ? Math.max(3, (item.sbd / maxSbd) * 100) : 0;
+    row.innerHTML =
+      '<div style="position:absolute;left:0;top:0;bottom:0;width:' + barW + '%;background:rgba(6,182,212,0.12);border-radius:4px;pointer-events:none"></div>' +
+      '<div style="position:relative;z-index:1">' +
+        '<div style="font-size:0.66rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:148px" title="' + item.label.replace(/"/g,'&quot;') + '">' + item.label + '</div>' +
+        '<div style="font-size:0.7rem;font-weight:700;color:var(--cyan)">' + fmtTree(item.sbd) + '</div>' +
+      '</div>';
+
+    if(isClickable){
+      (function(capturedItem){
+        row.addEventListener('click', function(){
+          treeState = treeState.slice(0, stateIdx);
+          treeState.push({levelIdx: levelIdx, selectedValue: capturedItem.label});
+          treeNextLevel = -1;
+          renderTree();
+        });
+      })(item);
+      row.addEventListener('mouseenter', function(){this.style.borderColor = 'var(--border)'});
+      row.addEventListener('mouseleave', function(){this.style.borderColor = 'transparent'});
+    } else if(isSelected){
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', function(){
+        treeState = treeState.slice(0, stateIdx);
+        treeNextLevel = -1;
+        renderTree();
+      });
+    } else if(isSwappable){
+      (function(capturedItem){
+        row.addEventListener('click', function(){
+          var deeperSelections = treeState.slice(stateIdx + 1);
+          treeState = treeState.slice(0, stateIdx);
+          treeState.push({levelIdx: levelIdx, selectedValue: capturedItem.label});
+          var testData = getTreeData();
+          for(var t=0; t<treeState.length; t++){
+            var tLvl = TREE_LEVELS[treeState[t].levelIdx];
+            testData = testData.filter(function(r){return fieldVal(r, tLvl.key) === treeState[t].selectedValue});
+          }
+          for(var d=0; d<deeperSelections.length; d++){
+            var ds = deeperSelections[d];
+            var dLvl = TREE_LEVELS[ds.levelIdx];
+            var vals = {};
+            testData.forEach(function(r){var k=fieldVal(r,dLvl.key);vals[k]=true});
+            if(vals[ds.selectedValue]){
+              treeState.push(ds);
+              testData = testData.filter(function(r){return fieldVal(r, dLvl.key) === ds.selectedValue});
+            } else {
+              break;
+            }
+          }
+          renderTree();
+        });
+      })(item);
+      row.addEventListener('mouseenter', function(){this.style.borderColor = 'var(--border)'; this.style.opacity = '0.5'});
+      row.addEventListener('mouseleave', function(){this.style.borderColor = 'transparent'; this.style.opacity = '0.25'});
+    }
+
+    itemsDiv.appendChild(row);
+  });
+
+  col.appendChild(itemsDiv);
+  return col;
+}
+
+function resetTree(){
+  treeState = [];
+  treeNextLevel = -1;
+  renderTree();
+}
+
+var origRefresh = refresh;
+refresh = function(){
+  origRefresh();
+  if(document.getElementById('pageQuotetree').style.display !== 'none'){
+    renderTree();
+  }
+};
+
+var origShowPage = showPage;
+showPage = function(page){
+  origShowPage(page);
+  if(page === 'quotetree') renderTree();
+  if(page === 'leadtracker') renderLeadTree();
+  if(page === 'contractvalue') refreshCV();
+  if(page === 'cvtree') renderCVTree();
+};
+
+var cvCrossFilter={dim:null,val:null,chartId:null};
+function toggleCVCrossFilter(dim,val,chartId){
+  if(cvCrossFilter.dim===dim&&cvCrossFilter.val===val){cvCrossFilter.dim=null;cvCrossFilter.val=null;cvCrossFilter.chartId=null}
+  else{cvCrossFilter.dim=dim;cvCrossFilter.val=val;cvCrossFilter.chartId=chartId}
+  refreshCV();
+}
+
+var cvLastData=null;
+
+function computeCV(){
+  var svcF=getChecked('cv-svc-cb');
+  var snF=getChecked('cv-sn-cb');
+  var base=ROWS.filter(function(r){return taMatchesRow(r)});
+  if(svcF) base=base.filter(function(r){return svcF.indexOf(r.svc)>=0});
+  if(snF) base=base.filter(function(r){return snF.indexOf(r.sn)>=0});
+  if(cvCrossFilter.dim) base=base.filter(function(r){return r[cvCrossFilter.dim]===cvCrossFilter.val});
+
+  var cyCvYtd=base.reduce(function(s,r){return s+(r.cycv||0)},0);
+  var lyCvYtd=base.reduce(function(s,r){return s+(r.lycv||0)},0);
+
+  function ymNum(d){if(!d)return null;var y=parseInt(d.substring(0,4)),m=parseInt(d.substring(5,7));return y*12+m}
+  var maxQdYM='';
+  ROWS.forEach(function(r){if(r.qd&&r.qd>maxQdYM)maxQdYM=r.qd});
+  if(!maxQdYM){var _now=new Date();maxQdYM=_now.getFullYear()+'-'+('0'+(_now.getMonth()+1)).slice(-2)}
+  var cyYear=parseInt(maxQdYM.substring(0,4));
+  var cyMaxMonth=parseInt(maxQdYM.substring(5,7));
+  var lyYear=cyYear-1, priorYear=cyYear-2;
+  var qfn=cyYear*12+1, qtn=cyYear*12+cyMaxMonth;
+
+  var cyQR=base.filter(function(r){var n=ymNum(r.qd);return n&&n>=qfn&&n<=qtn});
+  var cyQAll=new Set(cyQR.map(function(r){return r.eq})).size;
+  var cyAYtd=new Set(cyQR.filter(function(r){return r.st==='Accepted'}).map(function(r){return r.eq})).size;
+  var lyAcc2026=new Set(base.filter(function(r){return r.qd&&r.qd.substring(0,4)===String(lyYear)&&r.st==='Accepted'}).map(function(r){return r.eq})).size;
+
+  var cyPre=base.filter(function(r){var qn=ymNum(r.qd);var sn2=ymNum(r.sb);return qn&&qn<cyYear*12+1&&sn2&&sn2>=qfn&&sn2<=qtn});
+  var cyPreQ=new Set(cyPre.map(function(r){return r.eq})).size;
+  var cyPreA=new Set(cyPre.filter(function(r){return r.st==='Accepted'}).map(function(r){return r.eq})).size;
+  var lyPre=base.filter(function(r){var qn=ymNum(r.qd);var sn2=ymNum(r.sb);return qn&&qn<lyYear*12+1&&sn2&&sn2>=lyYear*12+1&&sn2<=lyYear*12+12});
+  var lyPreA=new Set(lyPre.filter(function(r){return r.st==='Accepted'}).map(function(r){return r.eq})).size;
+
+  var cyAccTotal=cyAYtd+cyPreA;
+  var cyDenom=cyQAll+cyPreQ;
+  var cyAccRate=cyDenom>0?cyAccTotal/cyDenom:0;
+  var lyQR=base.filter(function(r){return r.qd&&r.qd.substring(0,4)===String(lyYear)});
+  var lyQAll=new Set(lyQR.map(function(r){return r.eq})).size;
+  var lyAYtd=new Set(lyQR.filter(function(r){return r.st==='Accepted'}).map(function(r){return r.eq})).size;
+  var lyPreQ=new Set(lyPre.map(function(r){return r.eq})).size;
+  var lyAccTotal=lyAYtd+lyPreA;
+  var lyDenom=lyQAll+lyPreQ;
+  var lyAccRate=lyDenom>0?lyAccTotal/lyDenom:0;
+
+  var cyQuoteSet=new Set();
+  var lyQuoteSet=new Set();
+  base.forEach(function(r){if(r.cycv>0)cyQuoteSet.add(r.eq);if(r.lycv>0)lyQuoteSet.add(r.eq)});
+  var cyQuoteCount=cyQuoteSet.size;
+  var lyQuoteCount=lyQuoteSet.size;
+
+  function aggCV(rows,dim,field){var m={};rows.forEach(function(r){var k=r[dim]||'(Blank)';m[k]=(m[k]||0)+(r[field]||0)});return m}
+  var cyByInd=aggCV(base,'ind','cycv'),lyByInd=aggCV(base,'ind','lycv');
+  var cyByAg=aggCV(base,'ag','cycv'),lyByAg=aggCV(base,'ag','lycv');
+  var cyBySvc=aggCV(base,'svc','cycv'),lyBySvc=aggCV(base,'svc','lycv');
+  var cyBySn=aggCV(base,'sn','cycv'),lyBySn=aggCV(base,'sn','lycv');
+  var cyBySrc=aggCV(base,'src','cycv'),lyBySrc=aggCV(base,'src','lycv');
+
+  var cyConv=base.filter(function(r){return r.st==='Accepted'&&r.qdue==='Signed'});
+  var convAvg={};
+  var convAg={};
+  cyConv.forEach(function(r){var k=r.ag||'(Blank)';if(!convAg[k])convAg[k]={t:0,c:0};convAg[k].t+=r.cd;convAg[k].c++});
+  for(var k in convAg) convAvg[k]=Math.round(convAg[k].t/convAg[k].c);
+
+  return {
+    cyAccRate:cyAccRate,lyAccRate:lyAccRate,
+    acc26:cyAYtd,lyAcc26:lyAcc2026,acc25:cyPreA,lyAcc25:lyPreA,
+    cyCvYtd:cyCvYtd,lyCvYtd:lyCvYtd,
+    cyQuoteCount:cyQuoteCount,lyQuoteCount:lyQuoteCount,
+    cyByInd:cyByInd,lyByInd:lyByInd,cyByAg:cyByAg,lyByAg:lyByAg,
+    cyBySvc:cyBySvc,lyBySvc:lyBySvc,cyBySn:cyBySn,lyBySn:lyBySn,
+    cyBySrc:cyBySrc,lyBySrc:lyBySrc,
+    convAvg:convAvg
+  };
+}
+
+function makeCVHbar(id,boxId,labels,cy,ly,cyTotal,lyTotal,dim){
+  if(!_chartOK)return;
+  if(charts[id]){charts[id].destroy();delete charts[id]}
+  var box=document.getElementById(boxId);
+  box.style.height=Math.max(80,labels.length*50)+'px';
+  box.innerHTML='<canvas id="'+id+'"></canvas>';
+  var cT=cyTotal||0,lT=lyTotal||0;
+  var isSource=cvCrossFilter.chartId===id;
+  var selIdx=isSource?labels.indexOf(cvCrossFilter.val):-1;
+  var cyBg=labels.map(function(_,i){return isSource&&selIdx>=0&&i!==selIdx?'rgba(6,182,212,0.25)':CYC});
+  var lyBg=labels.map(function(_,i){return isSource&&selIdx>=0&&i!==selIdx?'rgba(20,184,166,0.15)':LYC});
+  charts[id]=new Chart(document.getElementById(id),{
+    type:'bar',
+    data:{labels:labels,datasets:[
+      {label:'CY',data:cy,backgroundColor:cyBg,borderRadius:3,barPercentage:0.55,categoryPercentage:0.7},
+      {label:'LY',data:ly,backgroundColor:lyBg,borderRadius:3,barPercentage:0.55,categoryPercentage:0.7}
+    ]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,animation:{duration:700,easing:'easeOutQuart'},animations:{x:{type:'number',easing:'easeOutQuart',duration:700,from:0}},
+      layout:{padding:{right:110}},
+      interaction:{mode:'y',intersect:false},
+      onClick:function(e){
+        if(!dim)return;
+        var chart=charts[id];
+        var els=chart.getElementsAtEventForMode(e, 'y', {intersect:false}, false);
+        if(!els.length)return;
+        var idx=els[0].index;
+        toggleCVCrossFilter(dim,labels[idx],id);
+      },
+      plugins:{legend:{display:false},tooltip:{enabled:false,external:extTT(function(){return cvLastData.cyCvYtd},function(){return cvLastData.lyCvYtd}),mode:'y',intersect:false}},
+      scales:{
+        x:{beginAtZero:true,ticks:{callback:function(v){return fmt(v)},font:{size:9}},grid:{color:'#1e293b'}},
+        y:{grid:{display:false},ticks:{font:{size:9},color:'#94a3b8'},afterFit:function(axis){axis.width=Math.max(axis.width,160)}}
+      }
+    },
+    plugins:[{
+      id:'barLabels_'+id,
+      afterDraw:function(chart){
+        var ctx2=chart.ctx;
+        chart.data.datasets.forEach(function(ds,dsIdx){
+          var meta=chart.getDatasetMeta(dsIdx);
+          var total=dsIdx===0?cT:lT;
+          meta.data.forEach(function(bar,i){
+            var val=ds.data[i];
+            if(val==null||val===0)return;
+            var p=total>0?(val/total*100).toFixed(1)+'%':'';
+            var label=fmt(val)+(p?' ('+p+')':'');
+            ctx2.save();
+            ctx2.font='bold 10px Segoe UI, system-ui, sans-serif';
+            ctx2.fillStyle=dsIdx===0?'#e2e8f0':'#94a3b8';
+            ctx2.textAlign='left';
+            ctx2.textBaseline='middle';
+            ctx2.fillText(label,bar.x+6,bar.y);
+            ctx2.restore();
+          });
+        });
+      }
+    }]
+  });
+}
+
+function refreshCV(){
+  updateBtnLabel('cv-svc-cb','cvSvcBtn');
+  updateBtnLabel('cv-sn-cb','cvSnBtn');
+  var badge=document.getElementById('cvCrossFilterBadge');
+  var dimNames={ind:'Industry',ag:'Agent Entity',svc:'Service',sn:'Service Nature',src:'Sales Channel'};
+  if(cvCrossFilter.dim){badge.style.display='block';document.getElementById('cvCrossFilterLabel').textContent='Filtered by '+dimNames[cvCrossFilter.dim]+': '+cvCrossFilter.val}
+  else{badge.style.display='none'}
+
+  var d=computeCV();
+  cvLastData=d;
+
+  document.getElementById('cvAccRate').textContent=fmtPct(d.cyAccRate);
+  document.getElementById('cvAccDelta').innerHTML=deltaHtml(d.cyAccRate,d.lyAccRate>0?d.lyAccRate:null,'%');
+  document.getElementById('cvAccQty26').textContent=d.acc26;
+  document.getElementById('cvAccQtyDelta26').innerHTML=deltaHtml(d.acc26,d.lyAcc26||null);
+  document.getElementById('cvAccQty25').textContent=d.acc25;
+  document.getElementById('cvAccQtyDelta25').innerHTML=deltaHtml(d.acc25,d.lyAcc25||null);
+  document.getElementById('cvValYtd').textContent=fmt(d.cyCvYtd);
+  document.getElementById('cvValYtdDelta').innerHTML=deltaHtml(d.cyCvYtd,d.lyCvYtd||null);
+  document.getElementById('cvQuoteCount').textContent=d.cyQuoteCount;
+  document.getElementById('cvQuoteCountDelta').innerHTML=deltaHtml(d.cyQuoteCount,d.lyQuoteCount||null);
+
+  var ind=sortedDim(d.cyByInd,d.lyByInd);
+  makeCVHbar('cvChartIndustry','cvBoxIndustry',ind.labels,ind.cy,ind.ly,d.cyCvYtd,d.lyCvYtd,'ind');
+  var ag=sortedDim(d.cyByAg,d.lyByAg);
+  makeCVHbar('cvChartAgent','cvBoxAgent',ag.labels,ag.cy,ag.ly,d.cyCvYtd,d.lyCvYtd,'ag');
+  var svc=sortedDim(d.cyBySvc,d.lyBySvc);
+  makeCVHbar('cvChartService','cvBoxService',svc.labels,svc.cy,svc.ly,d.cyCvYtd,d.lyCvYtd,'svc');
+  var sn=sortedDim(d.cyBySn,d.lyBySn);
+  makeCVHbar('cvChartNature','cvBoxNature',sn.labels,sn.cy,sn.ly,d.cyCvYtd,d.lyCvYtd,'sn');
+  var src=sortedDim(d.cyBySrc,d.lyBySrc);
+  makeCVHbar('cvChartChannel','cvBoxChannel',src.labels,src.cy,src.ly,d.cyCvYtd,d.lyCvYtd,'src');
+
+  var cvConvLabels=Object.keys(d.convAvg).filter(function(k){return d.convAvg[k]>0}).sort(function(a,b){return d.convAvg[b]-d.convAvg[a]});
+  var cvConvData=cvConvLabels.map(function(a){return d.convAvg[a]||0});
+  var cvConvColors=cvConvLabels.map(function(a){return agColor(a)});
+  makeDonut('cvChartConvDonut','cvBoxConvDonut',cvConvLabels,cvConvData,cvConvColors,function(v){return v},'ag',toggleCVCrossFilter,cvCrossFilter);
+
+  var cvAgLabels=Object.keys(d.cyByAg).filter(function(k){return (d.cyByAg[k]||0)>0}).sort(function(a,b){return (d.cyByAg[b]||0)-(d.cyByAg[a]||0)});
+  var cvDonutData=cvAgLabels.map(function(a){return d.cyByAg[a]||0});
+  var cvAgColors=cvAgLabels.map(function(a){return agColor(a)});
+  makeDonut('cvChartAgentDonut','cvBoxAgentDonut',cvAgLabels,cvDonutData,cvAgColors,function(v){return fmt(v)},'ag',toggleCVCrossFilter,cvCrossFilter);
+}
+
+var LEAD_LEVELS = [
+  {key:'ls',  label:'LEAD STATUS'},
+  {key:'br',  label:'BRANCH'},
+  {key:'src', label:'SOURCE'}
+];
+
+var leadTreeState = [];
+var leadNextLevel = -1;
+
+function leadAggByKey(data, key){
+  var map = {};
+  data.forEach(function(r){
+    var k = fieldVal(r, key);
+    if(!map[k]) map[k] = {label: k, count: 0};
+    map[k].count++;
+  });
+  return Object.values(map).sort(function(a,b){return b.count - a.count});
+}
+
+function populateLeadYearFilter(){
+  var panel = document.getElementById('leadYearPanel');
+  if(!panel || panel.querySelector('.lead-yr-cb')) return;
+  var years = {};
+  (window.LEADS || []).forEach(function(r){
+    if(r && r.ed) years[r.ed.substring(0,4)] = 1;
+  });
+  Object.keys(years).sort().reverse().forEach(function(y){
+    var lbl = document.createElement('label');
+    lbl.innerHTML = '<input type="checkbox" class="lead-yr-cb" value="' + y + '" checked' +
+      ' onchange="uncheckAll(\'lead-yr-cb\');onLeadFilterChange()"> ' + y;
+    panel.appendChild(lbl);
+  });
+}
+
+var LEAD_MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function updateLeadFilterLabels(){
+  [['lead-yr-cb','leadYearBtn',false],['lead-mo-cb','leadMonthBtn',true]].forEach(function(cfg){
+    var cbs = [].slice.call(document.querySelectorAll('.' + cfg[0]));
+    var btn = document.getElementById(cfg[1]);
+    if(!btn || !cbs.length) return;
+    var checked = cbs.filter(function(c){return c.checked});
+    if(checked.length === 0 || checked.length === cbs.length) btn.textContent = 'All';
+    else if(checked.length === 1){
+      var v = checked[0].value;
+      btn.textContent = cfg[2] ? LEAD_MONTH_NAMES[parseInt(v,10) - 1] : v;
+    }
+    else btn.textContent = checked.length + ' selected';
+  });
+}
+
+function onLeadFilterChange(){
+  updateLeadFilterLabels();
+  renderLeadTree();
+}
+
+function clearLeadNextLevelOnDrill(){
+  if(leadNextLevel !== 'high' && leadNextLevel !== 'low') leadNextLevel = -1;
+}
+
+function findLeadAutoLevel(data, usedIdxs, mode){
+  var bestIdx = -1, bestVal = null;
+  for(var i = 0; i < LEAD_LEVELS.length; i++){
+    if(usedIdxs.indexOf(i) >= 0) continue;
+    var agg = leadAggByKey(data, LEAD_LEVELS[i].key);   // sorted count DESC
+    if(!agg.length) continue;
+    var v = (mode === 'high') ? agg[0].count : agg[agg.length - 1].count;
+    if(bestVal === null || (mode === 'high' ? v > bestVal : v < bestVal)){ bestVal = v; bestIdx = i; }
+  }
+  if(bestIdx < 0) bestIdx = findBestLevel(data, LEAD_LEVELS, usedIdxs, '_count');
+  return bestIdx;
+}
+
+function renderLeadTree(){
+  var container = document.getElementById('leadTreeContainer');
+  if(!container) return;
+  container.innerHTML = '';
+
+  populateLeadYearFilter();
+  updateLeadFilterLabels();
+
+  var yf = getChecked('lead-yr-cb');
+  var mf = getChecked('lead-mo-cb');
+  var allData = LEADS;
+  if(yf || mf){
+    allData = LEADS.filter(function(r){
+      if(!r.ed) return false;   // exclude leads with no enquiry date when filtering
+      if(yf && yf.indexOf(r.ed.substring(0,4)) < 0) return false;
+      if(mf && mf.indexOf(r.ed.substring(5,7)) < 0) return false;
+      return true;
+    });
+  }
+  var totalCount = allData.length;
+  document.getElementById('leadTotalCount').textContent = totalCount.toLocaleString();
+
+  var breadcrumb = document.getElementById('leadBreadcrumb');
+  if(breadcrumb){
+    if(leadTreeState.length === 0){
+      breadcrumb.innerHTML = '';
+    } else {
+      var bc = leadTreeState.map(function(s,i){
+        var lvl = LEAD_LEVELS[s.levelIdx];
+        return '<span style="cursor:pointer;text-decoration:underline" onclick="leadTreeState=leadTreeState.slice(0,'+ i +');renderLeadTree()">' +
+          lvl.label + ': ' + s.selectedValue + '</span>';
+      }).join(' <span style="color:var(--border)">&rsaquo;</span> ');
+      breadcrumb.innerHTML = bc;
+    }
+  }
+
+  var rootCol = makeLeadCol(-1, 'LEAD', [{label:'LEAD', count:totalCount}], -1, true);
+  container.appendChild(rootCol);
+
+  var filteredData = allData;
+  for(var i = 0; i < leadTreeState.length; i++){
+    var s = leadTreeState[i];
+    var lvl = LEAD_LEVELS[s.levelIdx];
+    var agg = leadAggByKey(filteredData, lvl.key);
+
+    container.appendChild(makeLeadConnector(filteredData, s.selectedValue, lvl.key));
+    var col = makeLeadCol(s.levelIdx, lvl.label, agg, i, false);
+    container.appendChild(col);
+
+    filteredData = filteredData.filter(function(r){return fieldVal(r, lvl.key) === s.selectedValue});
+  }
+
+  var usedIdxs = leadTreeState.map(function(s){return s.levelIdx});
+  var nextLevelIdx;
+  if(leadNextLevel === 'high' || leadNextLevel === 'low'){
+    nextLevelIdx = findLeadAutoLevel(filteredData, usedIdxs, leadNextLevel);
+  } else if(typeof leadNextLevel === 'number' && leadNextLevel >= 0 && usedIdxs.indexOf(leadNextLevel) < 0){
+    nextLevelIdx = leadNextLevel;
+  } else {
+    leadNextLevel = -1;
+    nextLevelIdx = findBestLevel(filteredData, LEAD_LEVELS, usedIdxs, '_count');
+  }
+  if(nextLevelIdx >= 0){
+    var nextLvl = LEAD_LEVELS[nextLevelIdx];
+    var agg2 = leadAggByKey(filteredData, nextLvl.key);
+    if(leadNextLevel === 'low') agg2 = agg2.slice().reverse();
+    if(agg2.length > 0){
+      container.appendChild(makeLeadConnector(null, null, null));
+      var col2 = makeLeadCol(nextLevelIdx, nextLvl.label, agg2, leadTreeState.length, false);
+      container.appendChild(col2);
+    }
+  }
+
+  container.scrollLeft = container.scrollWidth;
+}
+
+function makeLeadConnector(data, selectedVal, key){
+  var div = document.createElement('div');
+  div.style.cssText = 'display:flex;flex-direction:column;justify-content:flex-start;flex-shrink:0;width:32px;padding-top:28px;position:relative';
+
+  if(!data || !selectedVal){
+    div.innerHTML = '<div style="height:2px;background:var(--cyan);opacity:0.35;margin-top:16px"></div>';
+    return div;
+  }
+
+  var agg = leadAggByKey(data, key);
+  var selIdx = agg.findIndex(function(a){return a.label === selectedVal});
+  var itemH = 46, headerH = 28;
+  var startY = headerH + 16;
+  var selectedY = headerH + selIdx * (itemH + 3) + itemH/2;
+
+  var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', '32');
+  svg.setAttribute('height', Math.max(200, agg.length * (itemH+3) + headerH + 20));
+  svg.style.cssText = 'position:absolute;top:0;left:0;overflow:visible';
+
+  var line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line1.setAttribute('x1','0'); line1.setAttribute('y1', startY);
+  line1.setAttribute('x2','16'); line1.setAttribute('y2', startY);
+  line1.setAttribute('stroke','rgba(6,182,212,0.8)'); line1.setAttribute('stroke-width','2');
+  svg.appendChild(line1);
+
+  if(selIdx > 0){
+    var vline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    vline.setAttribute('x1','16'); vline.setAttribute('y1', startY);
+    vline.setAttribute('x2','16'); vline.setAttribute('y2', selectedY);
+    vline.setAttribute('stroke','rgba(6,182,212,0.8)'); vline.setAttribute('stroke-width','2');
+    svg.appendChild(vline);
+  }
+
+  var line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line2.setAttribute('x1','16'); line2.setAttribute('y1', selectedY);
+  line2.setAttribute('x2','32'); line2.setAttribute('y2', selectedY);
+  line2.setAttribute('stroke','rgba(6,182,212,0.8)'); line2.setAttribute('stroke-width','2');
+  svg.appendChild(line2);
+
+  div.appendChild(svg);
+  return div;
+}
+
+function makeLeadCol(levelIdx, title, items, stateIdx, isRoot){
+  var col = document.createElement('div');
+  col.style.cssText = 'flex-shrink:0;width:180px;display:flex;flex-direction:column;gap:0';
+
+  var header = document.createElement('div');
+  header.style.cssText = 'font-size:0.62rem;color:var(--cyan);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;padding:4px 8px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+  var isNextLeadCol = (stateIdx === leadTreeState.length && !isRoot);
+  if(isNextLeadCol){
+    var sel = document.createElement('select');
+    sel.style.cssText = 'background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:2px 20px 2px 4px;font-size:0.62rem;color:var(--cyan);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;cursor:pointer;width:100%;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'8\' height=\'5\'%3E%3Cpath d=\'M0 0l4 5 4-5z\' fill=\'%2306b6d4\'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center';
+    var usedLeadIdxs = leadTreeState.map(function(s){return s.levelIdx});
+    [['high','High value (auto)'],['low','Low value (auto)']].forEach(function(a){
+      var o = document.createElement('option');
+      o.value = a[0]; o.textContent = a[1];
+      if(leadNextLevel === a[0]) o.selected = true;
+      sel.appendChild(o);
+    });
+    for(var li = 0; li < LEAD_LEVELS.length; li++){
+      if(usedLeadIdxs.indexOf(li) >= 0) continue;
+      var opt = document.createElement('option');
+      opt.value = String(li);
+      opt.textContent = LEAD_LEVELS[li].label;
+      if(li === levelIdx && leadNextLevel !== 'high' && leadNextLevel !== 'low') opt.selected = true;
+      sel.appendChild(opt);
+    }
+    sel.addEventListener('change', function(){
+      var v = this.value;
+      leadNextLevel = (v === 'high' || v === 'low') ? v : parseInt(v, 10);
+      renderLeadTree();
+    });
+    header.appendChild(sel);
+  } else {
+    header.textContent = title;
+    header.title = title;
+  }
+  col.appendChild(header);
+
+  if(isRoot){
+    var box = document.createElement('div');
+    box.style.cssText = 'background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:10px 12px';
+    box.innerHTML = '<div style="font-size:0.7rem;font-weight:600;color:var(--text)">LEAD</div>' +
+      '<div style="font-size:1.05rem;font-weight:700;color:var(--cyan);margin-top:2px">' + items[0].count.toLocaleString() + '</div>';
+    col.appendChild(box);
+    return col;
+  }
+
+  var itemsDiv = document.createElement('div');
+  itemsDiv.style.cssText = 'display:flex;flex-direction:column;gap:3px;max-height:520px;overflow-y:auto;padding-right:2px';
+
+  var maxCount = items.length > 0 ? Math.max.apply(null, items.map(function(i2){return i2.count})) : 1;
+  var selectedVal = stateIdx < leadTreeState.length ? leadTreeState[stateIdx].selectedValue : null;
+
+  items.forEach(function(item){
+    var row = document.createElement('div');
+    var isSelected = item.label === selectedVal;
+    var isClickable = stateIdx >= leadTreeState.length;
+    var isSwappable = !isSelected && stateIdx < leadTreeState.length;
+
+    row.style.cssText = 'position:relative;background:var(--card2);border-radius:4px;padding:5px 8px;cursor:' +
+      (isClickable || isSelected || isSwappable ? 'pointer' : 'default') + ';border:1px solid ' +
+      (isSelected ? 'var(--cyan)' : 'transparent') + ';' +
+      (isSelected ? 'background:rgba(6,182,212,0.12);box-shadow:0 0 8px rgba(6,182,212,0.3);' : '') +
+      (!isSelected && stateIdx < leadTreeState.length ? 'opacity:0.25;' : '') +
+      'transition:opacity 0.15s,border-color 0.15s,box-shadow 0.15s;';
+
+    var barW = maxCount > 0 ? Math.max(3, (item.count / maxCount) * 100) : 0;
+    row.innerHTML =
+      '<div style="position:absolute;left:0;top:0;bottom:0;width:' + barW + '%;background:rgba(6,182,212,0.12);border-radius:4px;pointer-events:none"></div>' +
+      '<div style="position:relative;z-index:1">' +
+        '<div style="font-size:0.66rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px" title="' + item.label.replace(/"/g,'&quot;') + '">' + item.label + '</div>' +
+        '<div style="font-size:0.7rem;font-weight:700;color:var(--cyan)">' + item.count.toLocaleString() + '</div>' +
+      '</div>';
+
+    if(isClickable){
+      (function(capturedItem){
+        row.addEventListener('click', function(){
+          leadTreeState = leadTreeState.slice(0, stateIdx);
+          leadTreeState.push({levelIdx: levelIdx, selectedValue: capturedItem.label});
+          clearLeadNextLevelOnDrill();
+          renderLeadTree();
+        });
+      })(item);
+      row.addEventListener('mouseenter', function(){this.style.borderColor = 'var(--border)'});
+      row.addEventListener('mouseleave', function(){this.style.borderColor = 'transparent'});
+    } else if(isSelected){
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', function(){
+        leadTreeState = leadTreeState.slice(0, stateIdx);
+        clearLeadNextLevelOnDrill();
+        renderLeadTree();
+      });
+    } else if(isSwappable){
+      (function(capturedItem){
+        row.addEventListener('click', function(){
+          var deeperSelections = leadTreeState.slice(stateIdx + 1);
+          leadTreeState = leadTreeState.slice(0, stateIdx);
+          leadTreeState.push({levelIdx: levelIdx, selectedValue: capturedItem.label});
+          var testData = LEADS;
+          for(var t=0; t<leadTreeState.length; t++){
+            var tLvl = LEAD_LEVELS[leadTreeState[t].levelIdx];
+            testData = testData.filter(function(r){return fieldVal(r, tLvl.key) === leadTreeState[t].selectedValue});
+          }
+          for(var d=0; d<deeperSelections.length; d++){
+            var ds = deeperSelections[d];
+            var dLvl = LEAD_LEVELS[ds.levelIdx];
+            var vals = {};
+            testData.forEach(function(r){var k=fieldVal(r,dLvl.key);vals[k]=true});
+            if(vals[ds.selectedValue]){
+              leadTreeState.push(ds);
+              testData = testData.filter(function(r){return fieldVal(r, dLvl.key) === ds.selectedValue});
+            } else {
+              break;
+            }
+          }
+          renderLeadTree();
+        });
+      })(item);
+      row.addEventListener('mouseenter', function(){this.style.borderColor = 'var(--border)'; this.style.opacity = '0.5'});
+      row.addEventListener('mouseleave', function(){this.style.borderColor = 'transparent'; this.style.opacity = '0.25'});
+    }
+
+    itemsDiv.appendChild(row);
+  });
+
+  col.appendChild(itemsDiv);
+  return col;
+}
+
+function resetLeadTree(){
+  leadTreeState = [];
+  leadNextLevel = -1;
+  ['leadYearPanel','leadMonthPanel'].forEach(function(pid){
+    var panel = document.getElementById(pid);
+    if(!panel) return;
+    panel.querySelectorAll('input[type=checkbox]').forEach(function(c){ c.checked = true; });
+  });
+  updateLeadFilterLabels();
+  renderLeadTree();
+}
+
+var CVT_LEVELS = [
+  {key:'yr',  label:'Year'},
+  {key:'ag',  label:'AGENT - ENTITY'},
+  {key:'svc', label:'SERVICES'},
+  {key:'an',  label:'AGENT NAME'},
+  {key:'src', label:'SOURCE ( LEAD FROM )'},
+  {key:'pbl', label:'POSITION BY ...'},
+  {key:'pos', label:'POSITION'},
+  {key:'st',  label:'STATUS'},
+  {key:'bu',  label:'BU'},
+  {key:'ref', label:'REFERRED BY ...'},
+  {key:'ind', label:'INDUSTRY'},
+  {key:'cl',  label:'CLIENT NAME'},
+  {key:'inv', label:'INVOICE #'},
+  {key:'sc',  label:'SERVICE CYCLE'},
+  {key:'mn',  label:'Month'},
+  {key:'tamt',label:'[TASK] AMOUNT'}
+];
+
+var cvTreeState = [];
+var cvTreeNextLevel = -1;
+var cvTreeSearch = '';
+var _cvTreeSearchTimer = null;
+
+function onCVTreeSearchChange(val){
+  cvTreeSearch = (val || '').trim().toLowerCase();
+  if(_cvTreeSearchTimer) clearTimeout(_cvTreeSearchTimer);
+  _cvTreeSearchTimer = setTimeout(function(){ renderCVTree(); }, 120);
+}
+
+function getCVTreeData(){
+  var data = ROWS.filter(function(r){return taMatchesRow(r)});
+  var svcF = getChecked('cvt-svc-cb');
+  var snF = getChecked('cvt-sn-cb');
+  if(svcF) data = data.filter(function(r){return svcF.indexOf(r.svc)>=0});
+  if(snF) data = data.filter(function(r){return snF.indexOf(r.sn)>=0});
+  if(cvTreeSearch){
+    var q = cvTreeSearch;
+    data = data.filter(function(r){
+      var cl = (r.cl || '').toLowerCase();
+      var inv = (r.inv || '').toLowerCase();
+      var rmk = (r.rmk || '').toLowerCase();
+      return cl.indexOf(q) !== -1 || inv.indexOf(q) !== -1 || rmk.indexOf(q) !== -1;
+    });
+  }
+  return data;
+}
+
+function cvtAggByKey(data, key){
+  var map = {};
+  data.forEach(function(r){
+    var k = fieldVal(r, key);
+    if(!map[k]) map[k] = {label: k, cv: 0, count: 0};
+    map[k].cv += (r.cycv || 0);
+    map[k].count++;
+  });
+  return Object.values(map).sort(function(a,b){return b.cv - a.cv});
+}
+
+function renderCVTree(){
+  var container = document.getElementById('cvTreeContainer');
+  if(!container) return;
+  container.innerHTML = '';
+  updateBtnLabel('cvt-svc-cb','cvtSvcBtn');
+  updateBtnLabel('cvt-sn-cb','cvtSnBtn');
+
+  var allData = getCVTreeData();
+  var totalCV = allData.reduce(function(s,r){return s + (r.cycv||0)}, 0);
+  document.getElementById('cvTreeTotal').textContent = fmtTree(totalCV);
+
+  var breadcrumb = document.getElementById('cvTreeBreadcrumb');
+  if(breadcrumb){
+    if(cvTreeState.length === 0){
+      breadcrumb.innerHTML = '';
+    } else {
+      var bc = cvTreeState.map(function(s,i){
+        var lvl = CVT_LEVELS[s.levelIdx];
+        return '<span style="cursor:pointer;text-decoration:underline" onclick="cvTreeState=cvTreeState.slice(0,'+ i +');renderCVTree()">' +
+          lvl.label + ': ' + s.selectedValue + '</span>';
+      }).join(' <span style="color:var(--border)">&rsaquo;</span> ');
+      breadcrumb.innerHTML = bc;
+    }
+  }
+
+  var rootCol = makeCVTCol(-1, 'Total Contract Value', [{label:'Total Contract Value', cv:totalCV, count:allData.length}], -1, true);
+  container.appendChild(rootCol);
+
+  var filteredData = allData;
+  for(var i = 0; i < cvTreeState.length; i++){
+    var s = cvTreeState[i];
+    var lvl = CVT_LEVELS[s.levelIdx];
+    var agg = cvtAggByKey(filteredData, lvl.key);
+
+    container.appendChild(makeCVTConnector(filteredData, s.selectedValue, lvl.key));
+    var col = makeCVTCol(s.levelIdx, lvl.label, agg, i, false);
+    container.appendChild(col);
+
+    filteredData = filteredData.filter(function(r){
+      var v = fieldVal(r, lvl.key);
+      return v === s.selectedValue;
+    });
+  }
+
+  var usedIdxs = cvTreeState.map(function(s){return s.levelIdx});
+  var nextLevelIdx;
+  if(cvTreeNextLevel >= 0 && usedIdxs.indexOf(cvTreeNextLevel) < 0){
+    nextLevelIdx = cvTreeNextLevel;
+  } else {
+    cvTreeNextLevel = -1;
+    nextLevelIdx = findBestLevel(filteredData, CVT_LEVELS, usedIdxs, 'cycv');
+  }
+  if(nextLevelIdx >= 0){
+    var nextLvl = CVT_LEVELS[nextLevelIdx];
+    var agg2 = cvtAggByKey(filteredData, nextLvl.key);
+    if(agg2.length > 0){
+      container.appendChild(makeCVTConnector(null, null, null));
+      var col2 = makeCVTCol(nextLevelIdx, nextLvl.label, agg2, cvTreeState.length, false);
+      container.appendChild(col2);
+    }
+  }
+
+  container.scrollLeft = container.scrollWidth;
+}
+
+function makeCVTConnector(data, selectedVal, key){
+  var div = document.createElement('div');
+  div.style.cssText = 'display:flex;flex-direction:column;justify-content:flex-start;flex-shrink:0;width:32px;padding-top:28px;position:relative';
+
+  if(!data || !selectedVal){
+    div.innerHTML = '<div style="height:2px;background:var(--cyan);opacity:0.35;margin-top:16px"></div>';
+    return div;
+  }
+
+  var agg = cvtAggByKey(data, key);
+  var selIdx = agg.findIndex(function(a){return a.label === selectedVal});
+  var itemH = 46, headerH = 28;
+  var startY = headerH + 16;
+  var selectedY = headerH + selIdx * (itemH + 3) + itemH/2;
+
+  var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('width', '32');
+  svg.setAttribute('height', Math.max(200, agg.length * (itemH+3) + headerH + 20));
+  svg.style.cssText = 'position:absolute;top:0;left:0;overflow:visible';
+
+  var line1 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line1.setAttribute('x1','0'); line1.setAttribute('y1', startY);
+  line1.setAttribute('x2','16'); line1.setAttribute('y2', startY);
+  line1.setAttribute('stroke','rgba(6,182,212,0.8)'); line1.setAttribute('stroke-width','2');
+  svg.appendChild(line1);
+
+  if(selIdx > 0){
+    var vline = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    vline.setAttribute('x1','16'); vline.setAttribute('y1', startY);
+    vline.setAttribute('x2','16'); vline.setAttribute('y2', selectedY);
+    vline.setAttribute('stroke','rgba(6,182,212,0.8)'); vline.setAttribute('stroke-width','2');
+    svg.appendChild(vline);
+  }
+
+  var line2 = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  line2.setAttribute('x1','16'); line2.setAttribute('y1', selectedY);
+  line2.setAttribute('x2','32'); line2.setAttribute('y2', selectedY);
+  line2.setAttribute('stroke','rgba(6,182,212,0.8)'); line2.setAttribute('stroke-width','2');
+  svg.appendChild(line2);
+
+  div.appendChild(svg);
+  return div;
+}
+
+function makeCVTCol(levelIdx, title, items, stateIdx, isRoot){
+  var col = document.createElement('div');
+  col.style.cssText = 'flex-shrink:0;width:168px;display:flex;flex-direction:column;gap:0';
+
+  var header = document.createElement('div');
+  header.style.cssText = 'font-size:0.62rem;color:var(--cyan);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;padding:4px 8px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+  var isNextCol = (stateIdx === cvTreeState.length && !isRoot);
+  if(isNextCol){
+    var sel = document.createElement('select');
+    sel.style.cssText = 'background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:2px 20px 2px 4px;font-size:0.62rem;color:var(--cyan);font-weight:600;text-transform:uppercase;letter-spacing:0.3px;cursor:pointer;width:100%;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'8\' height=\'5\'%3E%3Cpath d=\'M0 0l4 5 4-5z\' fill=\'%2306b6d4\'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 4px center';
+    var usedIdxs = cvTreeState.map(function(s){return s.levelIdx});
+    for(var li=0;li<CVT_LEVELS.length;li++){
+      if(usedIdxs.indexOf(li)>=0) continue;
+      var opt = document.createElement('option');
+      opt.value = li;
+      opt.textContent = CVT_LEVELS[li].label;
+      if(li === levelIdx) opt.selected = true;
+      sel.appendChild(opt);
+    }
+    sel.addEventListener('change', function(){
+      var newIdx = parseInt(this.value);
+      cvTreeNextLevel = newIdx;
+      renderCVTree();
+    });
+    header.appendChild(sel);
+  } else {
+    header.textContent = title;
+    header.title = title;
+  }
+  col.appendChild(header);
+
+  if(isRoot){
+    var box = document.createElement('div');
+    box.style.cssText = 'background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:10px 12px';
+    box.innerHTML = '<div style="font-size:0.7rem;font-weight:600;color:var(--text)">Total Contract Value</div>' +
+      '<div style="font-size:1.05rem;font-weight:700;color:var(--cyan);margin-top:2px">' + fmtTree(items[0].cv) + '</div>';
+    col.appendChild(box);
+    return col;
+  }
+
+  var itemsDiv = document.createElement('div');
+  itemsDiv.style.cssText = 'display:flex;flex-direction:column;gap:3px;max-height:520px;overflow-y:auto;padding-right:2px';
+
+  var maxCV = items.length > 0 ? Math.max.apply(null, items.map(function(i2){return i2.cv})) : 1;
+  var selectedVal = stateIdx < cvTreeState.length ? cvTreeState[stateIdx].selectedValue : null;
+
+  items.forEach(function(item){
+    var row = document.createElement('div');
+    var isSelected = item.label === selectedVal;
+    var isClickable = stateIdx >= cvTreeState.length;
+    var isSwappable = !isSelected && stateIdx < cvTreeState.length;
+
+    row.style.cssText = 'position:relative;background:var(--card2);border-radius:4px;padding:5px 8px;cursor:' +
+      (isClickable || isSelected || isSwappable ? 'pointer' : 'default') + ';border:1px solid ' +
+      (isSelected ? 'var(--cyan)' : 'transparent') + ';' +
+      (isSelected ? 'background:rgba(6,182,212,0.12);box-shadow:0 0 8px rgba(6,182,212,0.3);' : '') +
+      (!isSelected && stateIdx < cvTreeState.length ? 'opacity:0.25;' : '') +
+      'transition:opacity 0.15s,border-color 0.15s,box-shadow 0.15s;';
+
+    var barW = maxCV > 0 ? Math.max(3, (item.cv / maxCV) * 100) : 0;
+    row.innerHTML =
+      '<div style="position:absolute;left:0;top:0;bottom:0;width:' + barW + '%;background:rgba(6,182,212,0.12);border-radius:4px;pointer-events:none"></div>' +
+      '<div style="position:relative;z-index:1">' +
+        '<div style="font-size:0.66rem;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:148px" title="' + item.label.replace(/"/g,'&quot;') + '">' + item.label + '</div>' +
+        '<div style="font-size:0.7rem;font-weight:700;color:var(--cyan)">' + fmtTree(item.cv) + '</div>' +
+      '</div>';
+
+    if(isClickable){
+      (function(capturedItem){
+        row.addEventListener('click', function(){
+          cvTreeState = cvTreeState.slice(0, stateIdx);
+          cvTreeState.push({levelIdx: levelIdx, selectedValue: capturedItem.label});
+          cvTreeNextLevel = -1;
+          renderCVTree();
+        });
+      })(item);
+      row.addEventListener('mouseenter', function(){this.style.borderColor = 'var(--border)'});
+      row.addEventListener('mouseleave', function(){this.style.borderColor = 'transparent'});
+    } else if(isSelected){
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', function(){
+        cvTreeState = cvTreeState.slice(0, stateIdx);
+        cvTreeNextLevel = -1;
+        renderCVTree();
+      });
+    } else if(isSwappable){
+      (function(capturedItem){
+        row.addEventListener('click', function(){
+          var deeperSelections = cvTreeState.slice(stateIdx + 1);
+          cvTreeState = cvTreeState.slice(0, stateIdx);
+          cvTreeState.push({levelIdx: levelIdx, selectedValue: capturedItem.label});
+          var testData = getCVTreeData();
+          for(var t=0; t<cvTreeState.length; t++){
+            var tLvl = CVT_LEVELS[cvTreeState[t].levelIdx];
+            testData = testData.filter(function(r){
+              var v = fieldVal(r, tLvl.key);
+              return v === cvTreeState[t].selectedValue;
+            });
+          }
+          for(var d=0; d<deeperSelections.length; d++){
+            var ds = deeperSelections[d];
+            var dLvl = CVT_LEVELS[ds.levelIdx];
+            var vals = {};
+            testData.forEach(function(r){
+              var v = fieldVal(r, dLvl.key);
+              vals[v]=true;
+            });
+            if(vals[ds.selectedValue]){
+              cvTreeState.push(ds);
+              testData = testData.filter(function(r){
+                var v = fieldVal(r, dLvl.key);
+                return v === ds.selectedValue;
+              });
+            } else {
+              break;
+            }
+          }
+          renderCVTree();
+        });
+      })(item);
+      row.addEventListener('mouseenter', function(){this.style.borderColor = 'var(--border)'; this.style.opacity = '0.5'});
+      row.addEventListener('mouseleave', function(){this.style.borderColor = 'transparent'; this.style.opacity = '0.25'});
+    }
+
+    itemsDiv.appendChild(row);
+  });
+
+  col.appendChild(itemsDiv);
+  return col;
+}
+
+function resetCVTree(){
+  cvTreeState = [];
+  cvTreeNextLevel = -1;
+  renderCVTree();
+}
+
+refresh();
+
+if (typeof BILL === 'undefined') var BILL = {};
+
+var qvbState = {
+  pre26: {ent:null, ag:null, ind:null, expandedEnt:{}, expandedAg:{}, expandedAn:{}, expandedCl:{}, search:''},
+  y26:   {ent:null, ag:null, ind:null, expandedEnt:{}, expandedAg:{}, expandedAn:{}, expandedCl:{}, search:''},
+  all:   {ent:null, ag:null, ind:null, expandedEnt:{}, expandedAg:{}, expandedAn:{}, expandedCl:{}, search:''}
+};
+
+var _qvbSearchTimers = {};
+function onQvbSearchChange(filterId, val) {
+  qvbState[filterId].search = (val || '').trim().toLowerCase();
+  if (_qvbSearchTimers[filterId]) clearTimeout(_qvbSearchTimers[filterId]);
+  _qvbSearchTimers[filterId] = setTimeout(function(){ renderQVBPage(filterId); }, 120);
+}
+
+function qvbToggleEnt(filterId, ent, ev) {
+  if (ev) ev.stopPropagation();
+  var s = qvbState[filterId];
+  if (s.expandedEnt[ent]) delete s.expandedEnt[ent];
+  else s.expandedEnt[ent] = 1;
+  renderQVBPage(filterId);
+}
+
+function qvbToggleAg(filterId, ent, ag, ev) {
+  if (ev) ev.stopPropagation();
+  var key = ent + '||' + ag;
+  var s = qvbState[filterId];
+  if (s.expandedAg[key]) delete s.expandedAg[key];
+  else s.expandedAg[key] = 1;
+  renderQVBPage(filterId);
+}
+function qvbToggleAn(filterId, ent, ag, an, ev) {
+  if (ev) ev.stopPropagation();
+  var key = ent + '||' + ag + '||' + an;
+  var s = qvbState[filterId];
+  if (s.expandedAn[key]) delete s.expandedAn[key];
+  else s.expandedAn[key] = 1;
+  renderQVBPage(filterId);
+}
+function qvbToggleCl(filterId, ent, ag, an, cl, ev) {
+  if (ev) ev.stopPropagation();
+  var key = ent + '||' + ag + '||' + an + '||' + cl;
+  var s = qvbState[filterId];
+  if (s.expandedCl[key]) delete s.expandedCl[key];
+  else s.expandedCl[key] = 1;
+  renderQVBPage(filterId);
+}
+
+var _indNorm = {};
+function normInd(s) {
+  if (!s) return '(Blank)';
+  var key = s.toLowerCase();
+  if (_indNorm[key]) return _indNorm[key];
+  _indNorm[key] = s;  // first occurrence wins as canonical name
+  return s;
+}
+['Entertainment and Media','Investment Holdings','Information Technology','Real Estate'].forEach(function(c){_indNorm[c.toLowerCase()]=c;});
+
+var ALL_IND = {};
+ROWS.forEach(function(r) {
+  if (r.st === 'Accepted') {
+    var ind = normInd(r.ind);
+    ALL_IND[ind] = 1;
+  }
+});
+
+function getQVBData(filterId) {
+  var cyYear = String(new Date().getFullYear());
+  var sbdFilter;
+  if (filterId === 'pre26') sbdFilter = function(yr){ return yr && yr < cyYear; };   // signed back STRICTLY BEFORE current year (excludes any future-dated SBDs)
+  else if (filterId === 'y26') sbdFilter = function(yr){ return yr === cyYear; };    // signed back IN current year
+  else sbdFilter = function(yr){ return true; };                                     // overall: any SBD year
+  return ROWS.filter(function(r) {
+    return r.cycv > 0 && taMatchesRow(r) && sbdFilter(r.yr);
+  });
+}
+
+function populateBillingMonthFilter(filterId, defaultCheckedYears) {
+  var panel = document.getElementById('bmPanel_' + filterId);
+  if (!panel) return;
+  var defaultSet = {};
+  (defaultCheckedYears || []).forEach(function(y){ defaultSet[String(y)] = 1; });
+  var allMonths = {};
+  for (var qn in BILL) {
+    (BILL[qn]||[]).forEach(function(e) { if(e[0]) allMonths[e[0]]=1; });
+  }
+  ROWS.forEach(function(r){ if (r.bm) allMonths[r.bm] = 1; });
+  var yearMonths = {};
+  Object.keys(allMonths).sort().forEach(function(m) {
+    var yr = m.split('-')[0];
+    if (!yearMonths[yr]) yearMonths[yr] = [];
+    yearMonths[yr].push(m);
+  });
+  var currentYearStr = String(new Date().getFullYear());
+  var years = Object.keys(yearMonths)
+    .filter(function(y) { return y <= currentYearStr; })
+    .sort()
+    .reverse();
+  years.forEach(function(yr){ yearMonths[yr].reverse(); });
+  var cls = 'bm-cb-' + filterId;
+  var mNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  panel.innerHTML = '';
+  var allChecked = years.every(function(y){ return defaultSet[y]; });
+  var allLabel = document.createElement('label');
+  allLabel.innerHTML = '<input type="checkbox" value="__all__"' + (allChecked ? ' checked' : '') + ' onchange="bmToggleAll(this,\'' + cls + '\',\'' + filterId + '\')"> All';
+  panel.appendChild(allLabel);
+  years.forEach(function(yr) {
+    var yrChecked = !!defaultSet[yr];
+    var yrLabel = document.createElement('label');
+    yrLabel.style.fontWeight = '700';
+    yrLabel.innerHTML = '<input type="checkbox" class="' + cls + '" value="Y:' + yr + '"' + (yrChecked ? ' checked' : '') + ' onchange="bmToggleYear(this,\'' + cls + '\',\'' + filterId + '\',\'' + yr + '\')"> ' + yr;
+    panel.appendChild(yrLabel);
+    yearMonths[yr].forEach(function(m) {
+      var mi = parseInt(m.split('-')[1]) - 1;
+      var moLabel = document.createElement('label');
+      moLabel.style.paddingLeft = '28px';
+      moLabel.innerHTML = '<input type="checkbox" class="' + cls + ' bm-mo-' + filterId + '-' + yr + '" value="' + m + '"' + (yrChecked ? ' checked' : '') + ' onchange="bmUncheckAll(\'' + cls + '\',\'' + filterId + '\',\'' + yr + '\')"> ' + mNames[mi];
+      panel.appendChild(moLabel);
+    });
+  });
+  bmUpdateBtn(filterId, cls);
+}
+
+function bmToggleAll(el, cls, filterId) {
+  document.querySelectorAll('#bmPanel_' + filterId + ' input[type=checkbox]').forEach(function(c) { c.checked = el.checked; });
+  bmUpdateBtn(filterId, cls);
+  refreshQVB(filterId);
+}
+
+function bmToggleYear(el, cls, filterId, yr) {
+  document.querySelectorAll('.bm-mo-' + filterId + '-' + yr).forEach(function(c) { c.checked = el.checked; });
+  bmSyncAllCb(filterId, cls);
+  bmUpdateBtn(filterId, cls);
+  refreshQVB(filterId);
+}
+
+function bmUncheckAll(cls, filterId, yr) {
+  var moCbs = [].slice.call(document.querySelectorAll('.bm-mo-' + filterId + '-' + yr));
+  var yrCb = document.querySelector('#bmPanel_' + filterId + ' input[value="Y:' + yr + '"]');
+  if (yrCb) yrCb.checked = moCbs.length > 0 && moCbs.every(function(c) { return c.checked; });
+  bmSyncAllCb(filterId, cls);
+  bmUpdateBtn(filterId, cls);
+  refreshQVB(filterId);
+}
+
+function bmSyncAllCb(filterId, cls) {
+  var cbs = [].slice.call(document.querySelectorAll('.' + cls));
+  var allCb = document.querySelector('#bmPanel_' + filterId + ' input[value="__all__"]');
+  if (allCb) allCb.checked = cbs.every(function(c) { return c.checked; });
+}
+
+function bmUpdateBtn(filterId, cls) {
+  var btn = document.getElementById('bmBtn_' + filterId);
+  var cbs = [].slice.call(document.querySelectorAll('.' + cls));
+  var checked = cbs.filter(function(c) { return c.checked; });
+  if (checked.length === 0 || checked.length === cbs.length) btn.textContent = 'All';
+  else if (checked.length === 1) btn.textContent = checked[0].value.indexOf('Y:') === 0 ? checked[0].value.substring(2) : checked[0].value;
+  else btn.textContent = checked.length + ' selected';
+}
+
+function getBmMatchFn(filterId) {
+  var cls = 'bm-cb-' + filterId;
+  var cbs = [].slice.call(document.querySelectorAll('.' + cls));
+  var checked = cbs.filter(function(c) { return c.checked; });
+  if (checked.length === 0 || checked.length === cbs.length) return function() { return true; };
+  var selMonths = {};
+  var selYears = {};
+  checked.forEach(function(c) {
+    if (c.value.indexOf('Y:') === 0) selYears[c.value.substring(2)] = 1;
+    else selMonths[c.value] = 1;
+  });
+  return function(bm) {
+    if (!bm) return false;
+    if (selMonths[bm]) return true;
+    if (selYears[bm.substring(0,4)]) return true;
+    return false;
+  };
+}
+
+function fmtComma(n) {
+  return Math.round(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function refreshQVB(filterId) {
+  renderQVBPage(filterId);
+}
+
+function qvbClickEntity(filterId, ent, ag) {
+  var st = qvbState[filterId];
+  if (st.ent === ent && st.ag === ag) { st.ent = null; st.ag = null; }
+  else { st.ent = ent; st.ag = ag; st.ind = null; }
+  renderQVBPage(filterId);
+}
+
+function qvbClickIndustry(filterId, ind) {
+  var st = qvbState[filterId];
+  if (st.ind === ind) { st.ind = null; }
+  else { st.ind = ind; st.ent = null; st.ag = null; }
+  renderQVBPage(filterId);
+}
+
+function renderQVBPage(filterId) {
+  var entityOrder = ['NWDIGITAL','NWSEC','NWAUDIT','NWACC','NWTAX','NWOS','NWPAY'];
+  var topGroup = ['NWDIGITAL','NWSEC'];
+  var bmMatchFn = getBmMatchFn(filterId);
+  var st = qvbState[filterId];
+  var allRows = getQVBData(filterId);
+
+  var rows = allRows;
+  if (st.ind) {
+    rows = allRows.filter(function(r) { return normInd(r.ind) === st.ind; });
+  }
+
+  var searchQ = (st.search || '').trim().toLowerCase();
+  var searchActive = searchQ.length > 0;
+  if (searchActive) {
+    rows = rows.filter(function(r) {
+      var cl = (r.cl || '').toLowerCase();
+      var inv = (r.inv || '').toLowerCase();
+      var rmk = (r.rmk || '').toLowerCase();
+      return cl.indexOf(searchQ) !== -1
+          || inv.indexOf(searchQ) !== -1
+          || rmk.indexOf(searchQ) !== -1;
+    });
+  }
+
+  var entityMap = {};
+  var qnAllEnts = {};
+
+  rows.forEach(function(r) {
+    if (!bmMatchFn(r.bm)) return;
+    var parts = r.eq.split(' ');
+    var qn = parts[0], ent = parts[1] || '(Blank)', ag = r.ag || 'BD';
+    if (!entityMap[ent]) entityMap[ent] = {qns:{}, cyv:0, rowsCount:0, bil:0, rtbQns:{}, rtb:0, agents:{}, indCyv:{}};
+    var em = entityMap[ent];
+    em.qns[qn] = 1;
+    em.cyv += r.cycv;
+    em.rowsCount += 1;
+    em.bil += (r.bil || 0);
+    if ((r.rtb || 0) > 0) { em.rtbQns[qn] = 1; em.rtb += r.rtb; }
+    var ind = normInd(r.ind);
+    em.indCyv[ind] = (em.indCyv[ind] || 0) + r.cycv;
+    if (!em.agents[ag]) em.agents[ag] = {qns:{}, cyv:0, rowsCount:0, bil:0, rtbQns:{}, rtb:0, agentNames:{}};
+    var ag_em = em.agents[ag];
+    ag_em.qns[qn] = 1;
+    ag_em.cyv += r.cycv;
+    ag_em.rowsCount += 1;
+    ag_em.bil += (r.bil || 0);
+    if ((r.rtb || 0) > 0) { ag_em.rtbQns[qn] = 1; ag_em.rtb += r.rtb; }
+    var an = r.an || '(Blank)';
+    if (!ag_em.agentNames[an]) ag_em.agentNames[an] = {qns:{}, cyv:0, rowsCount:0, bil:0, rtbQns:{}, rtb:0, clients:{}};
+    var an_em = ag_em.agentNames[an];
+    an_em.qns[qn] = 1;
+    an_em.cyv += r.cycv;
+    an_em.rowsCount += 1;
+    an_em.bil += (r.bil || 0);
+    if ((r.rtb || 0) > 0) { an_em.rtbQns[qn] = 1; an_em.rtb += r.rtb; }
+    var cl = r.cl || '(Blank)';
+    if (!an_em.clients[cl]) an_em.clients[cl] = {qns:{}, cyv:0, rowsCount:0, bil:0, rtbQns:{}, rtb:0, invoices:{}};
+    var cl_em = an_em.clients[cl];
+    cl_em.qns[qn] = 1;
+    cl_em.cyv += r.cycv;
+    cl_em.rowsCount += 1;
+    cl_em.bil += (r.bil || 0);
+    if ((r.rtb || 0) > 0) { cl_em.rtbQns[qn] = 1; cl_em.rtb += r.rtb; }
+    var invKey = (r.inv && r.inv.trim()) ? r.inv.trim()
+                : (r.rmk && r.rmk.trim()) ? r.rmk.trim()
+                : '(no invoice)';
+    if (!cl_em.invoices[invKey]) cl_em.invoices[invKey] = {qns:{}, cyv:0, rowsCount:0, bil:0, rtbQns:{}, rtb:0};
+    var inv_em = cl_em.invoices[invKey];
+    inv_em.qns[qn] = 1;
+    inv_em.cyv += r.cycv;
+    inv_em.rowsCount += 1;
+    inv_em.bil += (r.bil || 0);
+    if ((r.rtb || 0) > 0) { inv_em.rtbQns[qn] = 1; inv_em.rtb += r.rtb; }
+    if (!qnAllEnts[qn]) qnAllEnts[qn] = [];
+    var found = false;
+    for (var ei = 0; ei < qnAllEnts[qn].length; ei++) {
+      if (qnAllEnts[qn][ei].ent === ent && qnAllEnts[qn][ei].ag === ag) {
+        qnAllEnts[qn][ei].cyv += r.cycv; found = true; break;
+      }
+    }
+    if (!found) qnAllEnts[qn].push({ent:ent, ag:ag, cyv:r.cycv});
+  });
+
+  var entKeys = Object.keys(entityMap).filter(function(e){ return entityMap[e].cyv > 0; })
+    .sort(function(a,b){ var ia=entityOrder.indexOf(a),ib=entityOrder.indexOf(b); return (ia<0?999:ia)-(ib<0?999:ib); });
+
+  var filteredEntKeys = entKeys;
+  if (st.ent) {
+    filteredEntKeys = entKeys.filter(function(e){ return e === st.ent; });
+  }
+
+  var topEnts = filteredEntKeys.filter(function(e){ return topGroup.indexOf(e) >= 0; });
+  var botEnts = filteredEntKeys.filter(function(e){ return topGroup.indexOf(e) < 0; });
+
+  function renderTable(tbodyId, ents) {
+    var tbody = document.getElementById(tbodyId);
+    if (!tbody) return {qty:0,cyv:0,rc:0,bil:0,rtb:0};
+    tbody.innerHTML = '';
+    var tQty=0, tCYV=0, tRC=0, tBil=0, tRTB=0;
+    ents.forEach(function(ent) {
+      var d = entityMap[ent];
+      var agentKeys = Object.keys(d.agents).sort();
+      if (st.ag) agentKeys = agentKeys.filter(function(a){ return a === st.ag; });
+
+      var eQty=0, eCYV=0, eRC=0, eBil=0, eRTB=0;
+      if (st.ag) {
+        agentKeys.forEach(function(ag) {
+          var ad = d.agents[ag];
+          eQty += Object.keys(ad.qns).length; eCYV += ad.cyv; eRC += ad.rowsCount; eBil += ad.bil; eRTB += ad.rtb;
+        });
+      } else {
+        eQty = Object.keys(d.qns).length; eCYV = d.cyv; eRC = d.rowsCount; eBil = d.bil; eRTB = d.rtb;
+      }
+      if (eCYV <= 0) return;
+
+      var pct = eCYV > 0 ? Math.round(eRTB / eCYV * 100) : 0;
+      tQty += eQty; tCYV += eCYV; tRC += eRC; tBil += eBil; tRTB += eRTB;
+
+      var isEntSelected = st.ent === ent && !st.ag;
+      var isEntExpanded = searchActive || !!st.expandedEnt[ent];
+      var tr = document.createElement('tr');
+      tr.className = 'entity-row' + (isEntSelected ? ' qvb-selected' : '') + (isEntExpanded ? ' expanded' : '');
+      tr.innerHTML = '<td>'+ent+'</td><td>'+eQty+'</td><td>'+fmtComma(eCYV)+'</td><td>'+eRC+'</td><td>'+fmtComma(eBil)+'</td><td>'+pct+'%</td><td>'+fmtComma(eRTB)+'</td>';
+      (function(e){
+        tr.onclick = function(ev){
+          ev.stopPropagation();
+          var firstTd = this.cells[0];
+          if (firstTd && (ev.target === firstTd || firstTd.contains(ev.target))) {
+            qvbToggleEnt(filterId, e, ev);
+          } else {
+            qvbClickEntity(filterId, e, null);
+          }
+        };
+      })(ent);
+      tbody.appendChild(tr);
+
+      if (!isEntExpanded) return;
+
+      agentKeys.forEach(function(ag) {
+        var ad = d.agents[ag];
+        var aq = Object.keys(ad.qns).length;
+        var ap = ad.cyv > 0 ? Math.round(ad.rtb / ad.cyv * 100) : 0;
+        var isAgSelected = st.ent === ent && st.ag === ag;
+        var agKey = ent + '||' + ag;
+        var isAgExpanded = searchActive || !!st.expandedAg[agKey];
+        var str = document.createElement('tr');
+        str.className = 'sub-row visible' + (isAgSelected ? ' qvb-selected' : '');
+        var agToggle = '<span class="qvb-toggle" data-toggle="ag" data-ent="'+ent.replace(/"/g,'&quot;')+'" data-ag="'+ag.replace(/"/g,'&quot;')+'">'+(isAgExpanded ? '−' : '+')+'</span> ';
+        str.innerHTML = '<td>'+agToggle+ag+'</td><td>'+aq+'</td><td>'+fmtComma(ad.cyv)+'</td><td>'+ad.rowsCount+'</td><td>'+fmtComma(ad.bil)+'</td><td>'+ap+'%</td><td>'+fmtComma(ad.rtb)+'</td>';
+        (function(e,a){ str.onclick = function(ev){
+          if (ev.target.classList && ev.target.classList.contains('qvb-toggle')) {
+            ev.stopPropagation(); qvbToggleAg(filterId, e, a, ev); return;
+          }
+          ev.stopPropagation(); qvbClickEntity(filterId, e, a);
+        }; })(ent, ag);
+        tbody.appendChild(str);
+
+        if (isAgExpanded && ad.agentNames) {
+          var anKeys = Object.keys(ad.agentNames).sort(function(a,b){
+            return ad.agentNames[b].cyv - ad.agentNames[a].cyv;
+          });
+          anKeys.forEach(function(an) {
+            var an_d = ad.agentNames[an];
+            var anQty = Object.keys(an_d.qns).length;
+            var anPct = an_d.cyv > 0 ? Math.round(an_d.rtb / an_d.cyv * 100) : 0;
+            var anKey = ent + '||' + ag + '||' + an;
+            var isAnExpanded = searchActive || !!st.expandedAn[anKey];
+            var anTr = document.createElement('tr');
+            anTr.className = 'sub-row-2 visible';
+            var anLabel = (an || '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+            var anToggle = '<span class="qvb-toggle" data-toggle="an" data-ent="'+ent.replace(/"/g,'&quot;')+'" data-ag="'+ag.replace(/"/g,'&quot;')+'" data-an="'+anLabel+'">'+(isAnExpanded ? '−' : '+')+'</span> ';
+            anTr.innerHTML = '<td style="padding-left:28px">'+anToggle+anLabel+'</td><td>'+anQty+'</td><td>'+fmtComma(an_d.cyv)+'</td><td>'+an_d.rowsCount+'</td><td>'+fmtComma(an_d.bil)+'</td><td>'+anPct+'%</td><td>'+fmtComma(an_d.rtb)+'</td>';
+            (function(e,a,name){ anTr.onclick = function(ev){
+              if (ev.target.classList && ev.target.classList.contains('qvb-toggle')) {
+                ev.stopPropagation(); qvbToggleAn(filterId, e, a, name, ev);
+              }
+            }; })(ent, ag, an);
+            tbody.appendChild(anTr);
+
+            if (isAnExpanded && an_d.clients) {
+              var clKeys = Object.keys(an_d.clients).sort(function(a,b){
+                return an_d.clients[b].cyv - an_d.clients[a].cyv;
+              });
+              clKeys.forEach(function(cl) {
+                var cl_d = an_d.clients[cl];
+                var clQty = Object.keys(cl_d.qns).length;
+                var clPct = cl_d.cyv > 0 ? Math.round(cl_d.rtb / cl_d.cyv * 100) : 0;
+                var clKey = ent + '||' + ag + '||' + an + '||' + cl;
+                var isClExpanded = searchActive || !!st.expandedCl[clKey];
+                var clTr = document.createElement('tr');
+                clTr.className = 'sub-row-3 visible';
+                var clLabel = (cl || '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+                var hasInvoices = cl_d.invoices && Object.keys(cl_d.invoices).length > 0;
+                var clToggle = hasInvoices
+                  ? '<span class="qvb-toggle" data-toggle="cl">'+(isClExpanded ? '−' : '+')+'</span> '
+                  : '';
+                clTr.innerHTML = '<td style="padding-left:48px;font-size:0.85em;color:#94a3b8">'+clToggle+clLabel+'</td><td>'+clQty+'</td><td>'+fmtComma(cl_d.cyv)+'</td><td>'+cl_d.rowsCount+'</td><td>'+fmtComma(cl_d.bil)+'</td><td>'+clPct+'%</td><td>'+fmtComma(cl_d.rtb)+'</td>';
+                (function(e,a,name,client){ clTr.onclick = function(ev){
+                  if (ev.target.classList && ev.target.classList.contains('qvb-toggle')) {
+                    ev.stopPropagation(); qvbToggleCl(filterId, e, a, name, client, ev);
+                  }
+                }; })(ent, ag, an, cl);
+                tbody.appendChild(clTr);
+
+                if (isClExpanded && cl_d.invoices) {
+                  var invKeys = Object.keys(cl_d.invoices).sort(function(a,b){
+                    return cl_d.invoices[b].bil - cl_d.invoices[a].bil;
+                  });
+                  invKeys.forEach(function(inv) {
+                    var inv_d = cl_d.invoices[inv];
+                    var invQty = Object.keys(inv_d.qns).length;
+                    var invPct = inv_d.cyv > 0 ? Math.round(inv_d.rtb / inv_d.cyv * 100) : 0;
+                    var invTr = document.createElement('tr');
+                    invTr.className = 'sub-row-3 visible';
+                    var invLabel = (inv || '').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+                    invTr.innerHTML = '<td style="padding-left:68px;font-size:0.8em;color:#64748b;font-style:italic">'+invLabel+'</td><td>'+invQty+'</td><td>'+fmtComma(inv_d.cyv)+'</td><td>'+inv_d.rowsCount+'</td><td>'+fmtComma(inv_d.bil)+'</td><td>'+invPct+'%</td><td>'+fmtComma(inv_d.rtb)+'</td>';
+                    tbody.appendChild(invTr);
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+    });
+    var tp = tCYV > 0 ? Math.round(tRTB / tCYV * 100) : 0;
+    var totalTr = document.createElement('tr');
+    totalTr.className = 'total-row';
+    totalTr.innerHTML = '<td>Total</td><td>'+tQty+'</td><td>'+fmtComma(tCYV)+'</td><td>'+tRC+'</td><td>'+fmtComma(tBil)+'</td><td>'+tp+'%</td><td>'+fmtComma(tRTB)+'</td>';
+    tbody.appendChild(totalTr);
+    return {qty:tQty, cyv:tCYV, rc:tRC, bil:tBil, rtb:tRTB};
+  }
+
+  var allEnts = topEnts.concat(botEnts);
+  var tblResult = renderTable('qvbTbody_' + filterId, allEnts);
+
+  var totalCYV = tblResult.cyv;
+  var totalBil = tblResult.bil;
+  var totalRTB = tblResult.rtb;
+  var kpiPrefix = filterId === 'pre26' ? 'pre26' : (filterId === 'y26' ? 'y26' : 'all');
+  var cyvEl = document.getElementById('qvbCYV_' + kpiPrefix);
+  var bilEl = document.getElementById('qvbBilling_' + kpiPrefix);
+  var remEl = document.getElementById('qvbRemaining_' + kpiPrefix);
+  if (cyvEl) cyvEl.textContent = fmtComma(totalCYV);
+  if (bilEl) bilEl.textContent = fmtComma(totalBil);
+  if (remEl) remEl.textContent = fmtComma(totalRTB);
+
+  var indMap = {};
+  var chartEnts = st.ent ? filteredEntKeys : entKeys;
+  chartEnts.forEach(function(ent) {
+    if (!entityMap[ent]) return;
+    if (st.ag) {
+      rows.forEach(function(r) {
+        var parts = r.eq.split(' ');
+        var rEnt = parts[1] || '(Blank)';
+        var rAg = r.ag || 'BD';
+        if (rEnt === ent && rAg === st.ag) {
+          var ind = normInd(r.ind);
+          indMap[ind] = (indMap[ind]||0) + r.cycv;
+        }
+      });
+    } else {
+      for (var ind in entityMap[ent].indCyv) {
+        indMap[ind] = (indMap[ind]||0) + entityMap[ent].indCyv[ind];
+      }
+    }
+  });
+
+  for (var ai in ALL_IND) { if (!(ai in indMap)) indMap[ai] = 0; }
+  var indEntries = [];
+  for (var ind in indMap) { indEntries.push([ind, indMap[ind]]); }
+  indEntries.sort(function(a,b){ return b[1]-a[1]; });
+  var indLabels = indEntries.map(function(e){return e[0];});
+  var indValues = indEntries.map(function(e){return e[1];});
+
+  var indColors = indLabels.map(function(lbl) {
+    if (st.ind && lbl !== st.ind) return 'rgba(6,182,212,0.15)';
+    return 'rgba(6,182,212,0.7)';
+  });
+
+  var chartId = 'qvbIndChart_' + filterId;
+  var canvas = document.getElementById(chartId);
+  if (!canvas || !_chartOK) return;
+  var boxEl = document.getElementById('qvbIndBox_' + filterId);
+  if (boxEl) { var h = Math.max(200, indLabels.length * 35); boxEl.style.height = h + 'px'; }
+
+  if (charts[chartId]) { charts[chartId].destroy(); delete charts[chartId]; }
+  charts[chartId] = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: indLabels,
+      datasets: [{
+        data: indValues,
+        backgroundColor: indColors,
+        borderColor: 'rgba(6,182,212,1)',
+        borderWidth: 0,
+        borderRadius: 2,
+        barThickness: 18,
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {display:false},
+        tooltip: {callbacks: {label: function(ctx){return fmtComma(ctx.parsed.x);}}}
+      },
+      scales: {
+        x: {grid:{color:'rgba(30,41,59,0.5)'}, ticks:{callback:function(v){return fmt(v);}}},
+        y: {grid:{display:false}, ticks:{font:{size:10}}}
+      },
+      onClick: function(evt, elements) {
+        if (elements.length > 0) {
+          var idx = elements[0].index;
+          qvbClickIndustry(filterId, indLabels[idx]);
+        }
+      }
+    }
+  });
+}
+
+function initQVBPages() {
+  var allYears = {};
+  ROWS.forEach(function(r){ if (r.bm) allYears[r.bm.substring(0,4)] = 1; });
+  var yearList = Object.keys(allYears).sort();
+  var cyYear = String(new Date().getFullYear());
+  var defaultBmYears = allYears[cyYear] ? [cyYear] : yearList;
+  var allBmYears = yearList.filter(function(y){ return y <= cyYear; });
+  if (!allBmYears.length) allBmYears = yearList;
+  populateBillingMonthFilter('pre26', defaultBmYears);
+  populateBillingMonthFilter('y26',   defaultBmYears);
+  populateBillingMonthFilter('all',   allBmYears);
+  refreshQVB('pre26');
+  refreshQVB('y26');
+  refreshQVB('all');
+}
+initQVBPages();
+</script>
+
+
+<script>
+(function(){
+  var MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var COOLDOWN_MS = 30000;
+  var TIMEOUT_MS = 240000;
+  var refreshing = false;
+  var cooldownTimer = null;
+
+  function $(id){ return document.getElementById(id); }
+
+  function renderDropdowns(){
+    if (!window.DATE_MONTHS || !window.DATE_MONTHS.length) return;
+    var months = window.DATE_MONTHS;
+    var def_from = window.DEFAULT_FROM || months[0];
+    var def_to   = window.DEFAULT_TO   || months[months.length-1];
+    function opts(selected){
+      var out = '';
+      for (var i=months.length-1; i>=0; i--) {
+        var ym = months[i];
+        var y = ym.substring(0,4), m = parseInt(ym.substring(5,7),10);
+        out += '<option value="'+ym+'"'+(ym===selected?' selected':'')+'>'+y+' '+MONTHS[m-1]+'</option>';
+      }
+      return out;
+    }
+    ['fSignedFrom','fQuoteFrom'].forEach(function(id){
+      var el = $(id); if (el) el.innerHTML = opts(def_from);
+    });
+    ['fSignedTo','fQuoteTo'].forEach(function(id){
+      var el = $(id); if (el) el.innerHTML = opts(def_to);
+    });
+  }
+
+  function setTimestamps(){
+    if (!window.DASHBOARD_TS) return;
+    document.querySelectorAll('#lastUpdated').forEach(function(el){
+      el.textContent = window.DASHBOARD_TS;
+    });
+    document.querySelectorAll('.footer').forEach(function(el){
+      el.innerHTML = el.innerHTML.replace(
+        /<!--TS_START-->[\s\S]*?<!--TS_END-->/g,
+        '<!--TS_START-->'+window.DASHBOARD_TS+'<!--TS_END-->'
+      );
+    });
+  }
+
+  function setStatus(text, cls){
+    var el = $('refreshStatus');
+    if (!el) return;
+    el.textContent = text || '';
+    el.className = 'refresh-status' + (cls ? ' '+cls : '');
+  }
+
+  function setButtonRefreshing(on){
+    var btn = $('refreshBtn');
+    var icon = $('refreshBtnIcon');
+    var lbl = $('refreshBtnLabel');
+    if (!btn) return;
+    if (on) {
+      btn.disabled = true;
+      btn.classList.add('refreshing');
+      icon.innerHTML = '<span class="refresh-spinner"></span>';
+      lbl.textContent = 'Refreshing...';
+    } else {
+      btn.disabled = false;
+      btn.classList.remove('refreshing','cooldown');
+      icon.textContent = '↻';
+      lbl.textContent = 'Refresh now';
+    }
+  }
+
+  function startCooldown(seconds){
+    var btn = $('refreshBtn');
+    var lbl = $('refreshBtnLabel');
+    if (!btn) return;
+    var endsAt = Date.now() + seconds*1000;
+    btn.disabled = true;
+    btn.classList.add('cooldown');
+    function tick(){
+      var remaining = Math.ceil((endsAt - Date.now())/1000);
+      if (remaining <= 0) {
+        clearInterval(cooldownTimer); cooldownTimer = null;
+        setButtonRefreshing(false);
+        return;
+      }
+      lbl.textContent = 'Wait '+remaining+'s';
+    }
+    tick();
+    cooldownTimer = setInterval(tick, 1000);
+  }
+
+  function onRefreshClick(){
+    if (refreshing) return;
+    var endpoint = window.__REFRESH_ENDPOINT__ || '';
+    if (!endpoint || endpoint.indexOf('@@') !== -1) {
+      setStatus('Refresh endpoint not configured (deploy-time substitution missing)', 'error');
+      return;
+    }
+    refreshing = true;
+    setButtonRefreshing(true);
+    setStatus('Refreshing data... (about 1 minute)', 'loading'
