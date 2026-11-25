@@ -1,0 +1,162 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 820" width="1320" height="820" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif">
+  <title>SME Quote Dashboard: technical architecture</title>
+  <desc>Azure Function app with four HTTP endpoints, two identities (an Entra app registration with Graph Sites.Selected, and a system-assigned managed identity), private Blob storage, and an Azure Static Web App behind Entra ID sign-in.</desc>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"/>
+    </marker>
+    <style>
+      .ct { font-size: 15px; font-weight: 700; fill: #1f4e79; }
+      .cb { font-size: 12.5px; fill: #3b4654; }
+      .mono { white-space: pre; font-size: 12px; fill: #1f2733; font-family: Consolas, Menlo, monospace; }
+      .gl { font-size: 13px; font-weight: 700; fill: #5a6676; letter-spacing: 1.2px; }
+      .lb { font-size: 11.5px; font-weight: 600; fill: #1f4e79; paint-order: stroke; stroke: #f8fafc; stroke-width: 5px; stroke-linejoin: round; }
+      .card { fill: #ffffff; stroke: #c9d3df; stroke-width: 1.2; }
+      .hot { fill: #ffffff; stroke: #0e7490; stroke-width: 2; }
+      .id { fill: #fff8e6; stroke: #d29a1f; stroke-width: 1.3; }
+      .ln { fill: none; stroke: #1f4e79; stroke-width: 1.6; }
+      .dash { fill: none; stroke: #1f4e79; stroke-width: 1.5; stroke-dasharray: 5 4; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1320" height="820" rx="18" fill="#f4f6f9"/>
+  <text x="24" y="40" font-size="22" font-weight="700" fill="#1f2733">SME Quote Dashboard: technical architecture</text>
+  <text x="24" y="64" font-size="14" fill="#5a6676">Endpoints, identities and data stores. Names are generic; the real resource names are private.</text>
+
+  <!-- column groups -->
+  <rect x="20" y="84" width="300" height="716" rx="12" fill="#e9eff6"/>
+  <text x="38" y="110" class="gl">SOURCES</text>
+  <rect x="340" y="84" width="560" height="716" rx="12" fill="#e4f3f4"/>
+  <text x="358" y="110" class="gl">AZURE FUNCTIONS · PYTHON 3.11 · FLEX CONSUMPTION</text>
+  <rect x="920" y="84" width="380" height="716" rx="12" fill="#eef0f7"/>
+  <text x="938" y="110" class="gl">STATIC WEB APP · BROWSER</text>
+
+  <!-- sources -->
+  <rect class="card" x="38" y="126" width="264" height="150" rx="10"/>
+  <text x="52" y="150" class="ct">Quote rows (Blob)</text>
+  <text x="52" y="172" class="cb">Output of the quote engine:</text>
+  <text x="52" y="190" class="mono">window.DASHBOARD_DATA =</text>
+  <text x="52" y="206" class="mono">  {quote_billing:{rows:[…]}}</text>
+  <text x="52" y="228" class="cb">Columns matched by header name,</text>
+  <text x="52" y="246" class="cb">not position (alias list per field)</text>
+  <text x="52" y="264" class="cb">Read with the managed identity</text>
+
+  <rect class="card" x="38" y="300" width="264" height="168" rx="10"/>
+  <text x="52" y="324" class="ct">SharePoint (one site)</text>
+  <text x="52" y="346" class="cb">Lead Tracker workbooks via</text>
+  <text x="52" y="364" class="cb">Microsoft Graph:</text>
+  <text x="52" y="384" class="mono">• CoE      (sheet "COE")</text>
+  <text x="52" y="402" class="mono">• Online   (sheet "LEAD REPORT")</text>
+  <text x="52" y="420" class="mono">• Partners (header-name match,</text>
+  <text x="52" y="436" class="mono">            optional, fail-soft)</text>
+  <text x="52" y="456" class="cb">openpyxl, read-only, values only</text>
+
+  <rect class="id" x="38" y="494" width="264" height="132" rx="10"/>
+  <text x="52" y="518" class="ct">Identities</text>
+  <text x="52" y="540" class="cb">App registration (client secret in</text>
+  <text x="52" y="558" class="cb">app settings): Graph Sites.Selected,</text>
+  <text x="52" y="576" class="cb">granted read on one site only</text>
+  <text x="52" y="598" class="cb">System-assigned managed identity:</text>
+  <text x="52" y="616" class="cb">Storage Blob Data Reader</text>
+
+  <rect class="card" x="38" y="650" width="264" height="130" rx="10"/>
+  <text x="52" y="674" class="ct">Why reuse the engine?</text>
+  <text x="52" y="696" class="cb">The register's Power Query logic</text>
+  <text x="52" y="714" class="cb">(contract value stamps, billing</text>
+  <text x="52" y="732" class="cb">allocation) lives in one place.</text>
+  <text x="52" y="750" class="cb">Both dashboards read the same</text>
+  <text x="52" y="768" class="cb">rows, so their totals agree.</text>
+
+  <!-- function app -->
+  <rect class="hot" x="358" y="126" width="524" height="300" rx="10"/>
+  <text x="374" y="150" class="ct">POST /api/refresh   (function key)</text>
+  <text x="374" y="176" class="mono">1  acquire refresh-lock.json   → 409 if a run is live</text>
+  <text x="374" y="196" class="mono">                               (stale after 5 min)</text>
+  <text x="374" y="216" class="mono">2  MSAL client-credentials token for Graph</text>
+  <text x="374" y="236" class="mono">3  load quote rows (managed identity)</text>
+  <text x="374" y="256" class="mono">4  download + parse lead trackers</text>
+  <text x="374" y="276" class="mono">5  keep BRANCH ∈ {COE, TA}; derive service</text>
+  <text x="374" y="296" class="mono">   nature, position group, status, yyyy-mm</text>
+  <text x="374" y="316" class="mono">6  0 rows? abort, keep yesterday's file</text>
+  <text x="374" y="336" class="mono">7  render dashboard-data.js  (ROWS, LEADS, BILL,</text>
+  <text x="374" y="356" class="mono">   DATE_MONTHS, DEFAULT_FROM/TO, DASHBOARD_TS)</text>
+  <text x="374" y="376" class="mono">8  compute_summary() → dashboard-summary.json</text>
+  <text x="374" y="396" class="mono">9  release lock; reply rows, leads per source, secs</text>
+
+  <rect class="card" x="358" y="446" width="256" height="112" rx="10"/>
+  <text x="374" y="470" class="ct">GET /api/dashboard-data.js</text>
+  <text x="374" y="492" class="cb">Function key. Reads the blob</text>
+  <text x="374" y="510" class="cb">server-side so the container stays</text>
+  <text x="374" y="528" class="cb">private; on failure returns JS that</text>
+  <text x="374" y="546" class="cb">sets a load-error flag</text>
+
+  <rect class="card" x="626" y="446" width="256" height="112" rx="10"/>
+  <text x="642" y="470" class="ct">GET /api/dashboard-summary.json</text>
+  <text x="642" y="492" class="cb">Function key + CORS. Headline</text>
+  <text x="642" y="510" class="cb">KPIs (YTD acceptance rate, SBD,</text>
+  <text x="642" y="528" class="cb">contract value, by industry/agent)</text>
+  <text x="642" y="546" class="cb">for downstream dashboards</text>
+
+  <rect class="card" x="358" y="578" width="256" height="76" rx="10"/>
+  <text x="374" y="602" class="ct">GET /api/health   (anonymous)</text>
+  <text x="374" y="624" class="cb">Uptime ping; says whether the Graph</text>
+  <text x="374" y="642" class="cb">settings are present, never their values</text>
+
+  <rect class="card" x="626" y="578" width="256" height="202" rx="10"/>
+  <text x="642" y="602" class="ct">Private Blob container</text>
+  <text x="642" y="626" class="mono">dashboard-data.js</text>
+  <text x="642" y="644" class="mono">dashboard-summary.json</text>
+  <text x="642" y="662" class="mono">refresh-lock.json</text>
+  <text x="642" y="686" class="cb">No anonymous access. Written with</text>
+  <text x="642" y="704" class="cb">no-cache headers so a refresh shows</text>
+  <text x="642" y="722" class="cb">at once. Same account backs the</text>
+  <text x="642" y="740" class="cb">Function runtime (AzureWebJobsStorage),</text>
+  <text x="642" y="758" class="cb">so there is one store to secure</text>
+
+  <!-- SWA -->
+  <rect class="hot" x="938" y="126" width="344" height="216" rx="10"/>
+  <text x="954" y="150" class="ct">staticwebapp.config.json</text>
+  <text x="954" y="174" class="mono">/*  allowedRoles: authenticated</text>
+  <text x="954" y="194" class="mono">401 → 302 /.auth/login/aad</text>
+  <text x="954" y="214" class="mono">github / twitter / google → 404</text>
+  <text x="954" y="234" class="mono">Cache-Control: no-store</text>
+  <text x="954" y="258" class="cb">Then a page-level gate reads /.auth/me:</text>
+  <text x="954" y="276" class="cb">rejects the consumer Microsoft tenant</text>
+  <text x="954" y="294" class="cb">and any e-mail outside the firm's domains</text>
+  <text x="954" y="318" class="cb">Two-stage sign-out also ends the SSO session</text>
+
+  <rect class="hot" x="938" y="362" width="344" height="246" rx="10"/>
+  <text x="954" y="386" class="ct">index.html (vanilla JS + Chart.js 4)</text>
+  <text x="954" y="410" class="cb">Loads dashboard-data.js with a script tag,</text>
+  <text x="954" y="428" class="cb">then computes everything client-side:</text>
+  <text x="954" y="450" class="mono">computeAll()      Quote Report (SBD)</text>
+  <text x="954" y="468" class="mono">getTreeData()     Quote Tree (SBD)</text>
+  <text x="954" y="486" class="mono">renderLeadTree()  Lead Tracker</text>
+  <text x="954" y="504" class="mono">computeCV()       Quote Report (CV)</text>
+  <text x="954" y="522" class="mono">getCVTreeData()   Quote Tree (CV)</text>
+  <text x="954" y="540" class="mono">renderQVBPage()   Quote vs Billing ×3</text>
+  <text x="954" y="564" class="cb">Click any bar to cross-filter the page;</text>
+  <text x="954" y="582" class="cb">trees pick the next best split ("explain by")</text>
+
+  <rect class="card" x="938" y="628" width="344" height="152" rx="10"/>
+  <text x="954" y="652" class="ct">Refresh button</text>
+  <text x="954" y="674" class="cb">POSTs /api/refresh, shows "about 1 minute",</text>
+  <text x="954" y="692" class="cb">aborts after 4 minutes; 409 → "another</text>
+  <text x="954" y="710" class="cb">refresh is running"; errors start a 30 s</text>
+  <text x="954" y="728" class="cb">cool-down. On success the page reloads and</text>
+  <text x="954" y="746" class="cb">shows "Last refreshed: just now".</text>
+  <text x="954" y="766" class="cb">Deploys: Functions Core Tools + SWA CLI</text>
+
+  <!-- arrows -->
+  <path class="ln" d="M302,236 L358,236" marker-end="url(#ah)"/>
+  <path class="ln" d="M302,384 L330,384 L330,256 L358,256" marker-end="url(#ah)"/>
+  <path class="dash" d="M302,560 L322,560 L322,216 L358,216" marker-end="url(#ah)"/>
+  <path class="ln" d="M754,426 L754,578" marker-end="url(#ah)"/>
+  <path class="ln" d="M486,558 L486,568 L618,568 L618,640 L626,640" marker-end="url(#ah)"/>
+  <path class="ln" d="M614,502 L626,502" />
+  <path class="ln" d="M486,446 L486,436 L910,436 L910,460 L938,460" marker-end="url(#ah)"/>
+  <path class="ln" d="M938,700 L908,700 L908,150 L882,150" marker-end="url(#ah)"/>
+
+  <text x="764" y="572" class="lb">writes</text>
+  <text x="780" y="430" class="lb">script tag, function key</text>
+</svg>

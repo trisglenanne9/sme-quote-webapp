@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1320 800" width="1320" height="800" font-family="Segoe UI, Helvetica Neue, Arial, sans-serif">
+  <title>How the SME Quote Dashboard is built</title>
+  <desc>Sales keep their quote register and lead trackers in Excel on SharePoint. A quote engine turns the register into rows; pressing Refresh runs an Azure Function that reads those rows and the lead trackers, and writes one data file to private storage. Staff sign in with their company Microsoft account to a Static Web App that draws eight views from that file.</desc>
+  <defs>
+    <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1f4e79"/>
+    </marker>
+    <style>
+      .ct { font-size: 15px; font-weight: 700; fill: #1f4e79; }
+      .cb { font-size: 13px; fill: #3b4654; }
+      .gl { font-size: 13px; font-weight: 700; fill: #5a6676; letter-spacing: 1.2px; }
+      .lb { font-size: 12px; font-weight: 600; fill: #1f4e79; paint-order: stroke; stroke: #f8fafc; stroke-width: 5px; stroke-linejoin: round; }
+      .card { fill: #ffffff; stroke: #c9d3df; stroke-width: 1.2; }
+      .hot { fill: #ffffff; stroke: #0e7490; stroke-width: 2; }
+      .ln { fill: none; stroke: #1f4e79; stroke-width: 1.7; }
+      .dash { fill: none; stroke: #1f4e79; stroke-width: 1.5; stroke-dasharray: 5 4; }
+      .num { fill: #0e7490; }
+      .numt { font-size: 12px; font-weight: 700; fill: #ffffff; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1320" height="800" rx="18" fill="#f4f6f9"/>
+  <text x="24" y="40" font-size="22" font-weight="700" fill="#1f2733">How the SME Quote Dashboard is built</text>
+  <text x="24" y="64" font-size="14" fill="#5a6676">From the sales team's Excel files to eight interactive views, refreshed with one button</text>
+
+  <rect x="20" y="82" width="1280" height="696" rx="14" fill="#f8fafc" stroke="#1f4e79" stroke-width="1.5" stroke-dasharray="7 5"/>
+  <text x="40" y="110" font-size="14" font-weight="700" fill="#1f4e79">The firm's own Microsoft tenant · one company sign-in (Entra ID) · the data never leaves it</text>
+
+  <!-- groups -->
+  <rect x="40" y="126" width="330" height="630" rx="12" fill="#e9eff6"/>
+  <text x="60" y="152" class="gl">MICROSOFT 365 · SHAREPOINT</text>
+  <rect x="410" y="126" width="480" height="630" rx="12" fill="#e4f3f4"/>
+  <text x="430" y="152" class="gl">AZURE · BACK END</text>
+  <rect x="930" y="126" width="350" height="630" rx="12" fill="#eef0f7"/>
+  <text x="950" y="152" class="gl">FRONT END &amp; PEOPLE</text>
+
+  <!-- SharePoint -->
+  <rect class="card" x="60" y="172" width="290" height="140" rx="10"/>
+  <text x="76" y="198" class="ct">SME Quote register</text>
+  <text x="76" y="221" class="cb">One Excel workbook the sales team</text>
+  <text x="76" y="239" class="cb">already keeps: every quote, task line,</text>
+  <text x="76" y="257" class="cb">signed-back date, contract value and</text>
+  <text x="76" y="275" class="cb">billing month (about 7,000 lines)</text>
+  <text x="76" y="297" class="cb" font-style="italic">read only, never edited</text>
+
+  <rect class="card" x="60" y="444" width="290" height="140" rx="10"/>
+  <text x="76" y="470" class="ct">Lead Tracker workbooks</text>
+  <text x="76" y="493" class="cb">Three Excel files of enquiries (one per</text>
+  <text x="76" y="511" class="cb">lead channel), about 1,600 leads with</text>
+  <text x="76" y="529" class="cb">status, branch and source</text>
+  <text x="76" y="551" class="cb" font-style="italic">read only; the app can open this</text>
+  <text x="76" y="569" class="cb" font-style="italic">one SharePoint site and nothing else</text>
+
+  <!-- Azure -->
+  <rect class="card" x="430" y="172" width="440" height="120" rx="10"/>
+  <text x="446" y="198" class="ct">Quote engine (an earlier project)</text>
+  <text x="446" y="221" class="cb">Re-creates the workbook's Power Query steps in</text>
+  <text x="446" y="239" class="cb">Python and saves clean quote &amp; billing rows to</text>
+  <text x="446" y="257" class="cb">its own private storage</text>
+  <text x="446" y="279" class="cb" font-style="italic">this dashboard reuses its output instead of re-parsing Excel</text>
+
+  <rect class="hot" x="430" y="332" width="440" height="190" rx="10"/>
+  <text x="446" y="358" class="ct">Refresh function (Azure Functions, Python)</text>
+  <text x="446" y="381" class="cb">Runs only when someone presses Refresh:</text>
+  <text x="446" y="403" class="cb">• takes a lock, so two refreshes can't collide</text>
+  <text x="446" y="423" class="cb">• reads the quote rows and the three lead trackers</text>
+  <text x="446" y="443" class="cb">• keeps the CoE branch, tidies dates and categories</text>
+  <text x="446" y="463" class="cb">• writes one data file + a small summary feed</text>
+  <text x="446" y="483" class="cb">• a broken optional source is skipped, not fatal</text>
+  <text x="446" y="507" class="cb" font-style="italic">about a minute end to end; costs nothing while idle</text>
+
+  <rect class="card" x="430" y="562" width="440" height="120" rx="10"/>
+  <text x="446" y="588" class="ct">Private storage (Azure Blob)</text>
+  <text x="446" y="611" class="cb">dashboard-data.js: every row the page needs</text>
+  <text x="446" y="629" class="cb">dashboard-summary.json: headline KPIs for other dashboards</text>
+  <text x="446" y="651" class="cb" font-style="italic">no public access: the page reads it through the</text>
+  <text x="446" y="669" class="cb" font-style="italic">function, which checks a key first</text>
+
+  <!-- Front end -->
+  <rect class="hot" x="950" y="172" width="310" height="190" rx="10"/>
+  <text x="966" y="198" class="ct">The dashboard (Static Web App)</text>
+  <text x="966" y="221" class="cb">One HTML page, eight views:</text>
+  <text x="966" y="241" class="cb">Quote Report and Quote Tree (SBD),</text>
+  <text x="966" y="259" class="cb">Lead Tracker, Quote Report and</text>
+  <text x="966" y="277" class="cb">Quote Tree (Contract Value), and</text>
+  <text x="966" y="295" class="cb">Quote vs Billing (pre-2026, 2026, all)</text>
+  <text x="966" y="319" class="cb" font-style="italic">every filter and drill-down is worked out</text>
+  <text x="966" y="337" class="cb" font-style="italic">in the browser, so it answers instantly</text>
+
+  <rect class="card" x="950" y="444" width="310" height="120" rx="10"/>
+  <text x="966" y="470" class="ct">Sales &amp; management</text>
+  <text x="966" y="493" class="cb">Sign in with their company Microsoft</text>
+  <text x="966" y="511" class="cb">account. Personal accounts and other</text>
+  <text x="966" y="529" class="cb">domains are turned away; Sign out also</text>
+  <text x="966" y="547" class="cb">ends the Microsoft session.</text>
+
+  <rect class="card" x="950" y="602" width="310" height="80" rx="10"/>
+  <text x="966" y="628" class="ct">Other dashboards</text>
+  <text x="966" y="651" class="cb">Read the summary feed with their own</text>
+  <text x="966" y="669" class="cb">key, so the headline KPIs match</text>
+
+  <!-- arrows -->
+  <path class="ln" d="M350,232 L430,232" marker-end="url(#ah)"/>
+  <path class="ln" d="M650,292 L650,332" marker-end="url(#ah)"/>
+  <path class="ln" d="M350,514 L390,514 L390,452 L430,452" marker-end="url(#ah)"/>
+  <path class="ln" d="M650,522 L650,562" marker-end="url(#ah)"/>
+  <path class="ln" d="M870,622 L922,622 L922,300 L950,300" marker-end="url(#ah)"/>
+  <path class="dash" d="M950,250 L893,250 L893,395 L870,395" marker-end="url(#ah)"/>
+  <path class="ln" d="M1105,444 L1105,362" marker-end="url(#ah)"/>
+  <path class="ln" d="M870,662 L950,662" marker-end="url(#ah)"/>
+
+  <g><circle class="num" cx="390" cy="232" r="11"/><text x="390" y="236" text-anchor="middle" class="numt">1</text></g>
+  <text x="664" y="317" class="lb">quote rows</text>
+  <g><circle class="num" cx="390" cy="484" r="11"/><text x="390" y="488" text-anchor="middle" class="numt">2</text></g>
+  <text x="664" y="547" class="lb">writes</text>
+  <g><circle class="num" cx="922" cy="470" r="11"/><text x="922" y="474" text-anchor="middle" class="numt">4</text></g>
+  <g><circle class="num" cx="893" cy="320" r="11"/><text x="893" y="324" text-anchor="middle" class="numt">3</text></g>
+  <text x="1124" y="410" class="lb">company sign-in</text>
+  <g><circle class="num" cx="1105" cy="403" r="11"/><text x="1105" y="407" text-anchor="middle" class="numt">5</text></g>
+
+  <!-- legend -->
+  <text x="60" y="612" class="cb" font-weight="700">The flow</text>
+  <text x="60" y="634" class="cb"><tspan fill="#0e7490" font-weight="700">1</tspan> the register becomes clean rows</text>
+  <text x="60" y="654" class="cb"><tspan fill="#0e7490" font-weight="700">2</tspan> lead trackers are read as they are</text>
+  <text x="60" y="674" class="cb"><tspan fill="#0e7490" font-weight="700">3</tspan> Refresh rebuilds the data file</text>
+  <text x="60" y="694" class="cb"><tspan fill="#0e7490" font-weight="700">4</tspan> the page loads it through the function</text>
+  <text x="60" y="714" class="cb"><tspan fill="#0e7490" font-weight="700">5</tspan> only company accounts get in</text>
+</svg>

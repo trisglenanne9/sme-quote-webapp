@@ -1,0 +1,35 @@
+1
+00:00:00,100 --> 00:00:05,120
+SME Quote Dashboard: which quotes came back signed, and what has been billed.
+
+2
+00:00:05,672 --> 00:00:12,322
+It replaced a Power BI report that everyone needed a licence for, rebuilt by hand from one Excel register.
+
+3
+00:00:12,875 --> 00:00:22,335
+Now an Azure Function reads the register and three lead trackers from SharePoint, and writes one private data file. Staff sign in with their company account.
+
+4
+00:00:22,890 --> 00:00:28,390
+The Quote Report shows the acceptance rate and signed-back value, this year against last.
+
+5
+00:00:28,945 --> 00:00:32,495
+Click any bar, and every chart on the page follows.
+
+6
+00:00:33,046 --> 00:00:38,906
+The Quote Tree breaks the value down by year, agent, and service, one click at a time.
+
+7
+00:00:39,457 --> 00:00:45,027
+Quote versus Billing shows contract value, what has been billed, and what is left to bill.
+
+8
+00:00:45,580 --> 00:00:49,590
+One press of Refresh rebuilds every figure in about a minute.
+
+9
+00:00:50,146 --> 00:00:54,366
+SME Quote Dashboard. A demo with made-up data.
